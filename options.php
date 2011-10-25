@@ -3,7 +3,7 @@ $location = $options_page; // Form Action URI
 $ch = '';
 ?>
 
-<div id="twitter-wings">
+<div id="twitter-wings-admin">
 	<h1>Twitter Wings</h1>
 
 	
@@ -128,13 +128,13 @@ $ch = '';
 </div>
 
 <style>
-	#twitter-wings { font-size: 16px; line-height: 20px; }
-	#twitter-wings h1 { font-family: Georgia; font-style: italic; font-size: 24px; line-height: 35px; font-weight: normal; }
-	#twitter-wings label { width: 180px; float: left; color: #000; }
-	#twitter-wings .tw_input { float: left; width: 300px; }  
-	#twitter-wings .desc{ clear: left; display: block; font-size: 12px; color: #666; } 
-	#twitter-wings .formrow { padding: 7px; clear: both; border-bottom: 1px solid #e5e5e5; border-top: 2px solid #fff; }
-	#twitter-wings .first { border-top: none; } 
-	#twitter-wings .last { border-bottom: none; }  
+	#twitter-wings-admin { font-size: 16px; line-height: 20px; }
+	#twitter-wings-admin h1 { font-family: Georgia; font-style: italic; font-size: 24px; line-height: 35px; font-weight: normal; }
+	#twitter-wings-admin label { width: 180px; float: left; color: #000; }
+	#twitter-wings-admin .tw_input { float: left; width: 300px; }  
+	#twitter-wings-admin .desc{ clear: left; display: block; font-size: 12px; color: #666; } 
+	#twitter-wings-admin .formrow { padding: 7px; clear: both; border-bottom: 1px solid #e5e5e5; border-top: 2px solid #fff; }
+	#twitter-wings-admin .first { border-top: none; } 
+	#twitter-wings-admin .last { border-bottom: none; }  
 	.button-primary { width: 100px; margin-top: 15px; height: 25px; }       
 </style>

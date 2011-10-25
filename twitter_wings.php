@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Twitter Wings
-Plugin URI: https://github.com/joepahl/Twitter-Wings
+Plugin URI: https://github.com/joepahl/twitter-wings
 Version: 1.0
 Description: Display tweets from one or more users. Output the display URL for links, and hide the t.co URL. Filter tweets by hashtags and/or hide hashtags altogether. Built in caching.
 Author: Joe Pahl
@@ -28,11 +28,11 @@ Domain Path: /lang
 */
 
 /* options page */
-$options_page = get_option('siteurl') . '/wp-admin/admin.php?page=twitter_wings/options.php';
+$options_page = get_option('siteurl') . '/wp-admin/admin.php?page=twitter-wings/options.php';
 
 /* Adds our admin options under "Options" */
 function tw_options_page() {
-	add_options_page('Twitter Wings', 'Twitter Wings', 10, 'twitter_wings/options.php');
+	add_options_page('Twitter Wings', 'Twitter Wings', 10, 'twitter-wings/options.php');
 }
 
 function TwitterWings(){
@@ -392,7 +392,7 @@ class TwitterWingsStart {
 
 class TwitterWings {
 	function control(){
-		echo 'Configure this widget on <a href="'.get_option('siteurl') . '/wp-admin/admin.php?page=twitter_wings/options.php'.'">options page</a>';
+		echo 'Configure this widget on <a href="'.get_option('siteurl') . '/wp-admin/admin.php?page=twitter-wings/options.php'.'">options page</a>';
 	}
 	function widget($args){
 		echo $args['before_widget'];
