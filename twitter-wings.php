@@ -328,7 +328,7 @@ class TwitterWingsStart {
 				// fallback for links sans-display_url
 				if (!$display_url)							
 					$display_url = $url;
-				$text = preg_replace("@{$url}([^A-Za-z0-9]|\s|$)@iu", "<a href='{$url}' class='tw-url'>{$display_url}</a> ", $text); // using @ to delimit, as / shows up in $url
+				$text = preg_replace("@{$url}([^A-Za-z0-9]|\s|$)@iu", "<a href='{$url}' class='tw-url'>{$display_url}</a>$1", $text); // using @ to delimit, as / shows up in $url
 			}
 		}	
 			
@@ -338,12 +338,12 @@ class TwitterWingsStart {
 			// loop through MENTIONS
 			foreach($mentions as $mention_array) {
 				extract($mention_array);
-				$text =  preg_replace("/@{$screen_name}\b/iU", "<span class='tw-mention'>@<a href='http://twitter.com/{$screen_name}'>{$screen_name}</a></span>", $text);
+				$text =  preg_replace("/@{$screen_name}\b/iuU", "<span class='tw-mention'>@<a href='http://twitter.com/{$screen_name}'>{$screen_name}</a></span>", $text);
 			}
 			
 			// mentioning yourself is lame, but here ya go (case-insensitive b/c we are dealing with primates)
 			if (stripos($text, "@{$username}")) {
-				$text = preg_replace("/@{$username}\b/iU", "<span class='tw-mention'>@<a href='http://twitter.com/{$username}'>{$username}</a></span>", $text);
+				$text = preg_replace("/@{$username}\b/iuU", "<span class='tw-mention'>@<a href='http://twitter.com/{$username}'>{$username}</a></span>", $text);
 			}
 		}
 		
