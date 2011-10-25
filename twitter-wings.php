@@ -7,7 +7,6 @@ Description: Display tweets from one or more users. Output the display URL for l
 Author: Joe Pahl
 Author URI: http://joepahl.is
 Text Domain: twitter-wings
-Domain Path: /lang
 */
 
 /*  Copyright 2011  Joe Pahl  (emailme@joepahl.is)
@@ -102,6 +101,7 @@ class TwitterWingsStart {
 				return $data;
 			} else {
 				_e('Sorry, we\'re not able to show data from Twitter at this time.', 'twitter-wings');
+				return;
 			}
 		}
 		
@@ -448,8 +448,15 @@ function tw_uninstall() {
 	delete_option('tw_cache');
 }
 
+function tw_delete_cache() {
+	$sitename = strtolower(str_replace(" ","-",get_bloginfo('name')));
+	$cache = dirname(__FILE__) . '/cache/' . $sitename . '/cache.ch';
+	unlink($cache);
+}
+
 if (get_option('tw_styles') == '')
 	add_action('wp_print_styles', 'tw_styles');
-	
+
+add_action('update_option_tw_usernames', 'tw_delete_cache');	
 add_action('admin_menu','tw_options_page');
 add_action('widgets_init', array('TwitterWings', 'register'));
