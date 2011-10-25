@@ -97,11 +97,11 @@ class TwitterWingsStart {
 	private function tw_getData($force){
 		
 		if($force == 'CACHE'){
-			if(file_exists($this->T_CACHE)){
+			if(file_exists($this->T_CACHE)){			
 				$data = unserialize(file_get_contents($this->T_CACHE));
 				return $data;
 			} else {
-				echo "Sorry, we're not able to show data from Twitter";
+				echo $this->T_CACHE . "<br />Sorry, we're not able to show data from Twitter";
 			}
 		}
 		
@@ -136,9 +136,14 @@ class TwitterWingsStart {
 		$api_query .= ($this->no_of_statuses > 20) ? "&count={$this->no_of_statuses}" : '';
 		
 		foreach ($this->users as $key=>$name) {
+			
+			if (!$name) {
+				echo "<p>Twitter Wings has not configured. Add the username(s) you would like to display on the <a href='/wp-admin/options-general.php?page=twitter-wings/options.php'>settings page</a>.</p>";
+				break;
+			}
 												
 			$url = rawurlencode($this->T_URL . $this->T_FORMAT . '/?screen_name=' . $name . $api_query);
-
+						
 			$xml = simplexml_load_file($url);
 			 							
 			/* if there is error in Twitter response force data from Cache */
@@ -146,7 +151,7 @@ class TwitterWingsStart {
 				$data = $this->tw_getData('CACHE');
 				return $data;
 			}
-			
+						
 			foreach ($xml as $x) {
 				
 				$retweet = ($x->retweeted_status) ? true : false;
