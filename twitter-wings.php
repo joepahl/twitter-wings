@@ -217,6 +217,7 @@ class TwitterWingsStart {
 				$tmp['avatar']		 = (string)$x->user->profile_image_url;
 				$tmp['permalink']	 = (string)'http://twitter.com/' . $x->user->screen_name . '/status/' . $x->id;
 				$sts[] = $tmp;
+
 			}
 		}
 		
@@ -317,7 +318,7 @@ class TwitterWingsStart {
 	 * 
 	 */	
 	private function tw_parseStatus($text, $urls, $mentions, $username, $hashtags) {
-		
+
 		// add url links
 		if(get_option('tw_https') != '' && $urls) {
 			
@@ -327,7 +328,7 @@ class TwitterWingsStart {
 				// fallback for links sans-display_url
 				if (!$display_url)							
 					$display_url = $url;
-				$text = preg_replace("@{$url}(\s|$)@i", "<a href='{$url}' class='tw-url'>{$display_url}</a> ", $text); // using @ to delimit, as / shows up in $url
+				$text = preg_replace("@{$url}([^A-Za-z0-9]|\s|$)@iu", "<a href='{$url}' class='tw-url'>{$display_url}</a> ", $text); // using @ to delimit, as / shows up in $url
 			}
 		}	
 			
