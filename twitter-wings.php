@@ -100,7 +100,7 @@ class TwitterWingsStart {
 				$data = unserialize(file_get_contents($this->T_CACHE));
 				return $data;
 			} else {
-				_e('Sorry, we\'re not able to show data from Twitter at this time.', 'twitter-wings');
+				//_e('Sorry, we\'re not able to show data from Twitter at this time.', 'twitter-wings');
 				return;
 			}
 		}
@@ -144,7 +144,7 @@ class TwitterWingsStart {
 												
 			$url = rawurlencode($this->T_URL . $this->T_FORMAT . '/?screen_name=' . $name . $api_query);
 						
-			$xml = simplexml_load_file($url);
+			$xml = @simplexml_load_file($url);
 			 							
 			/* if there is error in Twitter response force data from Cache */
 			if (!$xml) {
@@ -327,7 +327,7 @@ class TwitterWingsStart {
 				// fallback for links sans-display_url
 				if (!$display_url)							
 					$display_url = $url;
-				$text = str_replace($url, "<a href='{$url}' class='tw-url'>{$display_url}</a>", $text);
+				$text = preg_replace("@{$url}(\s|$)@i", "<a href='{$url}' class='tw-url'>{$display_url}</a> ", $text); // using @ to delimit, as / shows up in $url
 			}
 		}	
 			
@@ -337,12 +337,12 @@ class TwitterWingsStart {
 			// loop through MENTIONS
 			foreach($mentions as $mention_array) {
 				extract($mention_array);
-				$text =  str_ireplace("@{$screen_name}", "<span class='tw-mention'>@<a href='http://twitter.com/{$screen_name}'>{$screen_name}</a></span>", $text);
+				$text =  preg_replace("/@{$screen_name}\b/iU", "<span class='tw-mention'>@<a href='http://twitter.com/{$screen_name}'>{$screen_name}</a></span>", $text);
 			}
 			
 			// mentioning yourself is lame, but here ya go (case-insensitive b/c we are dealing with primates)
 			if (stripos($text, "@{$username}")) {
-				$text = str_ireplace("@{$username}", "<span class='tw-mention'>@<a href='http://twitter.com/{$username}'>{$username}</a></span>", $text);
+				$text = preg_replace("/@{$username}\b/iU", "<span class='tw-mention'>@<a href='http://twitter.com/{$username}'>{$username}</a></span>", $text);
 			}
 		}
 		
@@ -350,7 +350,7 @@ class TwitterWingsStart {
 		if(get_option('tw_removehashes') != '' && $hashtags) {
 			foreach($hashtags as $hash_array) {
 				extract($hash_array);
-				$text = str_ireplace("#{$hashtag}", "", $text);
+				$text = preg_replace("/#{$hashtag}\b/iU", "", $text);
 			}
 		}
 	
@@ -359,7 +359,7 @@ class TwitterWingsStart {
 			// loop through HASHTAGS
 			foreach($hashtags as $hash_array) {
 				extract($hash_array);
-				$text =  str_ireplace("#{$hashtag}", "<span class='tw-hashtag'>#<a href='http://twitter.com/search?q=%23{$hashtag}'>{$hashtag}</a></span>", $text);
+				$text =  preg_replace("/#{$hashtag}\b/iU", "<span class='tw-hashtag'>#<a href='http://twitter.com/search?q=%23{$hashtag}'>{$hashtag}</a></span> ", $text);
 			}
 		}
 			
