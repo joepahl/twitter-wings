@@ -101,7 +101,7 @@ class TwitterWingsStart {
 				$data = unserialize(file_get_contents($this->T_CACHE));
 				return $data;
 			} else {
-				echo $this->T_CACHE . "<br />Sorry, we're not able to show data from Twitter";
+				_e('Sorry, we\'re not able to show data from Twitter at this time.', 'twitter-wings');
 			}
 		}
 		
@@ -138,7 +138,7 @@ class TwitterWingsStart {
 		foreach ($this->users as $key=>$name) {
 			
 			if (!$name) {
-				echo "<p>Twitter Wings has not configured. Add the username(s) you would like to display on the <a href='/wp-admin/options-general.php?page=twitter-wings/options.php'>settings page</a>.</p>";
+				echo sprintf(__('Twitter Wings was not configured correctly. Add the username(s) you would like to display on the %soptions page%s.', 'twitter-wings'), "<a href='" . get_option('siteurl') . "/wp-admin/options-general.php?page=twitter-wings/options.php'>", "</a>");
 				break;
 			}
 												
@@ -397,7 +397,7 @@ class TwitterWingsStart {
 
 class TwitterWings {
 	function control(){
-		echo 'Configure this widget on <a href="'.get_option('siteurl') . '/wp-admin/admin.php?page=twitter-wings/options.php'.'">options page</a>';
+		echo sprintf(__('Configure this widget on %soptions page%s.', 'twitter-wings'), "<a href='" . get_option('siteurl') . "/wp-admin/options-general.php?page=twitter-wings/options.php'>", "</a>");
 	}
 	function widget($args){
 		echo $args['before_widget'];
@@ -423,12 +423,12 @@ register_deactivation_hook(__FILE__, 'tw_uninstall');
 // Default Settings
 // When plugin is activated, update version, and set any new settings to default
 function tw_install() {
-	// add_option('tw_active_version', '1.0');
+	add_option('tw_active_version', '1.0');
 	add_option('tw_usernames', 'joepahl');
 	add_option('tw_hashes', '');
 	add_option('tw_title', 'Twitter');
 	add_option('tw_number',	'15');
-	add_option('tw_photos', '1');
+	add_option('tw_photos', '');
 	add_option('tw_user_titles', '1');
 	add_option('tw_user_display', '');
 	add_option('tw_time_below', '');
@@ -444,23 +444,8 @@ function tw_install() {
 
 // Delete settings on when uninstalled
 function tw_uninstall() {
-	// delete_option('mfbfw_active_version');
-	delete_option('tw_usernames');
-	delete_option('tw_hashes');
-	delete_option('tw_title');
-	delete_option('tw_number');
-	delete_option('tw_photos');
-	delete_option('tw_user_titles');
-	delete_option('tw_user_display');
-	delete_option('tw_time_below');
-	delete_option('tw_reply');
-	delete_option('tw_retweet');
-	delete_option('tw_https');
-	delete_option('tw_screennames');
-	delete_option('tw_chashes');
-	delete_option('tw_removehashes');
+	delete_option('tw_active_version');
 	delete_option('tw_cache');
-	delete_option('tw_styles');
 }
 
 if (get_option('tw_styles') == '')
