@@ -54,13 +54,7 @@ class TwitterWingsStart {
 		$sitename = strtolower(str_replace(" ","-",get_bloginfo('name')));
 		$force = $_GET['tw_force']; // force source from url
 		
-		$site_dir = dirname(__FILE__) . '/cache/' . $sitename;
 		
-		if (!is_dir($site_dir)) {
-			mkdir($site_dir, 0755);
-		}
-		
-		$this->T_CACHE = dirname(__FILE__) . '/cache/' . $sitename . '/cache.ch';
 		
 		$cache_on = get_option('tw_cache');
 		$this->cache_on = $cache_on;
@@ -96,11 +90,9 @@ class TwitterWingsStart {
 	private function tw_getData($force){
 		
 		if($force == 'CACHE'){
-			if(file_exists($this->T_CACHE)){			
-				$data = unserialize(file_get_contents($this->T_CACHE));
+			if(false !== ( $data = get_transient('tw_tweet_cache'))){			
 				return $data;
 			} else {
-				//_e('Sorry, we\'re not able to show data from Twitter at this time.', 'twitter-wings');
 				return;
 			}
 		}
@@ -110,14 +102,7 @@ class TwitterWingsStart {
 			return $data;
 		}
 		
-		if(file_exists($this->T_CACHE) && $this->cache_on) {
-			$cache_time = filemtime($this->T_CACHE);
-			if(time()-$cache_time > 60){
-				$data = $this->tw_getApiData();
-			} else {
-				$data = unserialize(file_get_contents($this->T_CACHE));
-			}
-		} else {
+		if(false === ( $data = get_transient('tw_tweet_cache')) && $this->cache_on) {
 			$data = $this->tw_getApiData();
 		}
 		return $data;
@@ -232,10 +217,8 @@ class TwitterWingsStart {
 		$sts = $tmp;
 		/* end sorting */		
 			
-		/* put data in file for latter use : cache */	
-		$cache = fopen($this->T_CACHE, 'w');
-		fwrite($cache, serialize($sts));
-		fclose($cache);
+		/* put data in transient for latter use : cache */	
+		set_transient('tw_tweet_cache', $sts, 60*60); // set_transient will serialize for you. 60*60 = 1 hour
 		
 		return $sts;	
 	}
@@ -450,9 +433,7 @@ function tw_uninstall() {
 }
 
 function tw_delete_cache() {
-	$sitename = strtolower(str_replace(" ","-",get_bloginfo('name')));
-	$cache = dirname(__FILE__) . '/cache/' . $sitename . '/cache.ch';
-	unlink($cache);
+	delete_transient('tw_tweet_cache');
 }
 
 if (get_option('tw_styles') == '')
