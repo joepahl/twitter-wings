@@ -75,12 +75,12 @@ class TwitterWingsStart {
 
 		$data = $this->tw_getData($force);
 		
-		$twitter_wrap = "<div id='twitter-wings'>";
-		$twitter_wrap .= "<h1 class='widget-title tw-title'>" . get_option('tw_title')."</h1>";
+		$twitter_wrap = "\n<div id='twitter-wings'>\n\t";
+		$twitter_wrap .= "<h1 class='widget-title tw-title'>" . get_option('tw_title')."</h1>\n\t";
 	
 		$twitter_body = $this->tw_printData($data);
 		$twitter_wrap .= $twitter_body;
-		$twitter_wrap .= "</div>";
+		$twitter_wrap .= "\n</div>\n";
 		
 		if ($twitter_body != "<div class='tw-body'></div>") {
 			echo $twitter_wrap;
@@ -267,8 +267,8 @@ class TwitterWingsStart {
 					if (get_option('tw_user_display') != '')
 						$display_name = "<span class='tw-display-name'> {$val['name']}</span>";
 					$screenname = "<p class='tw-name'><a href='http://www.twitter.com/{$val['username']}' title='@{$val['username']} on Twitter'>{$val['username']}</a>$display_name</p>";
-					$hd_o = '<header>';
-					$hd_c = '</header>';
+					$hd_o = "<header>";
+					$hd_c = "</header>";
 				}
 								
 				$text = $this->tw_parseStatus($val['text'], $val['urls'], $val['mentions'], $val['username'], $val['hashtags']);
@@ -280,14 +280,14 @@ class TwitterWingsStart {
 				if (get_option('tw_time_below') == '') {
 					$time_above = $timestamp;
 					$time_below = '';
-					$hd_o = '<header>';
-					$hd_c = '</header>';
+					$hd_o = "<header>";
+					$hd_c = "</header>";
 				} else { 
 					$time_above = '';
 					$time_below = '<footer>' . $timestamp . '</footer>';
 				}
 				
-				$twitter_body .= "<article class='tw-status tw-$username'>{$img}<div class='tw-content'>{$hd_o}{$screenname}{$time_above}{$hd_c}<p class='tw-text'>$text</p>$time_below</div></article>";
+				$twitter_body .= "\n\t\t<article class='tw-status tw-$username'>{$img}<div class='tw-content'>{$hd_o}{$screenname}{$time_above}{$hd_c}<p class='tw-text'>$text</p>$time_below</div></article>\n\t";
 				$i++;
 				if($i == $this->no_of_statuses) break;
 			}
@@ -328,7 +328,7 @@ class TwitterWingsStart {
 				// fallback for links sans-display_url
 				if (!$display_url)							
 					$display_url = $url;
-				$text = preg_replace("@{$url}([^A-Za-z0-9]|\s|$)@iu", "<a href='{$url}' class='tw-url'>{$display_url}</a>$1", $text); // using @ to delimit, as / shows up in $url
+				$text = preg_replace("@{$url}([^A-Za-z0-9\"'><]|\s|$)@iu", "<a href='{$url}' class='tw-url'><span>{$display_url}<span></a>$1", $text); // using @ to delimit, as / shows up in $url
 			}
 		}	
 			
@@ -338,12 +338,12 @@ class TwitterWingsStart {
 			// loop through MENTIONS
 			foreach($mentions as $mention_array) {
 				extract($mention_array);
-				$text =  preg_replace("/@{$screen_name}\b/iuU", "<span class='tw-mention'>@<a href='http://twitter.com/{$screen_name}'>{$screen_name}</a></span>", $text);
+				$text =  preg_replace("/@{$screen_name}\b/iuU", "<a href='http://twitter.com/{$screen_name}' class='tw-mention'>@<span>{$screen_name}</span></a>", $text);
 			}
 			
 			// mentioning yourself is lame, but here ya go (case-insensitive b/c we are dealing with primates)
 			if (stripos($text, "@{$username}")) {
-				$text = preg_replace("/@{$username}\b/iuU", "<span class='tw-mention'>@<a href='http://twitter.com/{$username}'>{$username}</a></span>", $text);
+				$text = preg_replace("/@{$username}\b/iuU", "<a href='http://twitter.com/{$username}' class='tw-mention'>@<span>{$username}</span></a>", $text);
 			}
 		}
 		
@@ -360,7 +360,7 @@ class TwitterWingsStart {
 			// loop through HASHTAGS
 			foreach($hashtags as $hash_array) {
 				extract($hash_array);
-				$text =  preg_replace("/#{$hashtag}\b/iU", "<span class='tw-hashtag'>#<a href='http://twitter.com/search?q=%23{$hashtag}'>{$hashtag}</a></span> ", $text);
+				$text =  preg_replace("/#{$hashtag}\b/iU", "<a href='http://twitter.com/search?q=%23{$hashtag}' class='tw-hashtag'>#<span>{$hashtag}</span></a>", $text);
 			}
 		}
 			

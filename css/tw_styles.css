@@ -38,3 +38,11 @@ footer .tw-time {
 .tw-time a {
 	font-weight : normal;
 }
+
+#twitter-wings .tw-text a:link,
+#twitter-wings .tw-text a:visited,
+#twitter-wings .tw-text a:active,
+#twitter-wings .tw-text a:hover { text-decoration : none; }
+
+#twitter-wings .tw-text a:active span,
+#twitter-wings .tw-text a:hover span { text-decoration : underline; }
