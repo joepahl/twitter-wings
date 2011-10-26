@@ -102,7 +102,7 @@ class TwitterWingsStart {
 			return $data;
 		}
 		
-		if(false === ( $data = get_transient('tw_tweet_cache')) && $this->cache_on) {
+		if(false === ($data = get_transient('tw_tweet_cache')) || $this->cache_on == false) {
 			$data = $this->tw_getApiData();
 		}
 		return $data;
@@ -217,8 +217,15 @@ class TwitterWingsStart {
 		$sts = $tmp;
 		/* end sorting */		
 			
-		/* put data in transient for latter use : cache */	
-		set_transient('tw_tweet_cache', $sts, 60*60); // set_transient will serialize for you. 60*60 = 1 hour
+		/* put data in transient for latter use : cache */
+		
+		if (get_option('tw_cache_time') && is_numeric(get_option('tw_cache_time'))) {
+			$min = (int)get_option('tw_cache_time');
+		} else {
+			$min = 60;
+		} 
+				
+		set_transient('tw_tweet_cache', $sts, 60*$min); // set_transient will serialize for you. 60*60 = 1 hour
 		
 		return $sts;	
 	}
@@ -408,7 +415,7 @@ register_deactivation_hook(__FILE__, 'tw_uninstall');
 // When plugin is activated, update version, and set any new settings to default
 function tw_install() {
 	add_option('tw_active_version', '1.0');
-	add_option('tw_usernames', 'joepahl');
+	add_option('tw_usernames', 'joepahl,bsdeluxe,dylanized');
 	add_option('tw_hashes', '');
 	add_option('tw_title', 'Twitter');
 	add_option('tw_number',	'15');
@@ -423,6 +430,7 @@ function tw_install() {
 	add_option('tw_chashes', '1');
 	add_option('tw_removehashes', '');
 	add_option('tw_cache', '1');
+	add_option('tw_cache_time', '60');
 	add_option('tw_styles', '');
 }
 

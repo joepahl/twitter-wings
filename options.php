@@ -14,13 +14,13 @@ $ch = '';
 		<div class="formrow first">
 			<label for="usernames"><?php _e('Twitter Username(s):', 'twitter-wings'); ?></label>
 			<input type="text" id="usernames" name="tw_usernames" class="tw_input" value="<?php echo get_option('tw_usernames'); ?>" />
-			<span class="desc"><?php _e('List of Twitter accounts separated with ",". e.g. <i>joepahl,bsdeluxe,dylanized</i>', 'twitter-wings'); ?></span>
+			<span class="desc"><?php _e('List of Twitter accounts separated with ",". e.g. <i>joepahl,bsdeluxe,dylanized</i> (default: <i>blank</i>)', 'twitter-wings'); ?></span>
 		</div>
 		
 		<div class="formrow">		
 			<label for="hashes"><?php _e('Hashes:', 'twitter-wings'); ?></label>
 			<input type="text" id="hashes" name="tw_hashes" class="tw_input" value="<?php echo get_option('tw_hashes'); ?>" />
-			<span class="desc"><?php _e('List of hashes that post which you want to be displayed contains separated with ",". e.g. <i>#STL,#fh,#AEA</i>', 'twitter-wings'); ?></span>								
+			<span class="desc"><?php _e('Only display tweets that contain one the follow hashtags. Separate hashtags with ",". e.g. <i>#STL,#fh,#AEA</i> (default: <i>blank</i>)', 'twitter-wings'); ?></span>								
 		</div>
 		
 		<div class="formrow">		
@@ -109,7 +109,13 @@ $ch = '';
 			<label><?php _e('Use Cache', 'twitter-wings'); ?></label>
 			<?php if(get_option('tw_cache') != ""){ $ch = ' checked'; } else { $ch = ''; } ?>
 			<input type="checkbox" id="cache" name="tw_cache"<?php echo $ch ?> />
-			<span class="desc"><?php _e('Using cache will improve your page load. Data will be saved in cache every minute. (default: on)', 'twitter-wings'); ?></span>				
+			<span class="desc"><?php _e('Using cache will improve your page load. Data will be saved in cache at the increment of time set below. (default: on)', 'twitter-wings'); ?></span>				
+		</div>
+		
+		<div class="formrow">		
+			<label><?php _e('Cache Expire Time:', 'twitter-wings'); ?></label>
+			<input type="number" min="1" max="120" id="cache_time" name="tw_cache_time" class="tw_input short" value="<?php echo get_option('tw_cache_time'); ?>" />
+			<span class="desc"><?php _e('Number of minutes to use cached data before rechecking the Twitter API. (default: 60)', 'twitter-wings'); ?></span>				
 		</div>
 		
 		<div class="formrow last">		
@@ -120,7 +126,7 @@ $ch = '';
 		</div>
 
 		<input type="hidden" name="action" value="update" />
-        <input type="hidden" name="page_options" value="tw_usernames,tw_hashes,tw_number,tw_photos,tw_user_titles,tw_screennames,tw_https,tw_chashes,tw_removehashes,tw_cache,tw_title,tw_time_below,tw_retweet,tw_reply,tw_user_display,tw_styles" />
+        <input type="hidden" name="page_options" value="tw_usernames,tw_hashes,tw_number,tw_photos,tw_user_titles,tw_screennames,tw_https,tw_chashes,tw_removehashes,tw_cache,tw_cache_time,tw_title,tw_time_below,tw_retweet,tw_reply,tw_user_display,tw_styles" />
 		
 		<input type="submit" class="button-primary" value="<?php _e('Save Settings', 'twitter-wings'); ?>" />
 	
@@ -131,7 +137,8 @@ $ch = '';
 	#twitter-wings-admin { font-size: 16px; line-height: 20px; }
 	#twitter-wings-admin h1 { font-family: Georgia; font-style: italic; font-size: 24px; line-height: 35px; font-weight: normal; }
 	#twitter-wings-admin label { width: 180px; float: left; color: #000; }
-	#twitter-wings-admin .tw_input { float: left; width: 300px; }  
+	#twitter-wings-admin .tw_input { float: left; width: 300px; }
+	#twitter-wings-admin .short { width: 80px; }  
 	#twitter-wings-admin .desc{ clear: left; display: block; font-size: 12px; color: #666; } 
 	#twitter-wings-admin .formrow { padding: 7px; clear: both; border-bottom: 1px solid #e5e5e5; border-top: 2px solid #fff; }
 	#twitter-wings-admin .first { border-top: none; } 
