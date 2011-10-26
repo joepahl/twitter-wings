@@ -14,17 +14,17 @@ Displaying tweets from multiple accounts with caching and different color scheme
 
 With Twitter Wings you can :
 
-- display a list of your latest tweets,
-- replace t.co links with full URLs,
-- show or hide retweets,
-- show or hide replies,
+- display your latest tweets,
+- replace t.co links with full URLs (pretty links),
 - include tweets from one or multiple accounts,
 - cache tweets for faster page load,
-- only display tweets with user-defined hashtag,
+- display only tweets that contain a user-defined hashtag,
 - strip hashtags from tweets altogether,
+- show or hide retweets,
+- show or hide replies,
 - easy to implement as a sidebar widget or with a template function.
 
-You can find more informations about at https://github.com/joepahl/Twitter-Wings
+You can find more informations about Twitter Wings at https://github.com/joepahl/twitter-wings
 
 == Installation ==
 
