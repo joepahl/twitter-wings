@@ -68,14 +68,12 @@ class TwitterWingsStart {
 		$this->hashes = explode(",",$hashes);
 
 		$data = $this->tw_getData($force);
-		
-		$twitter_wrap = "\n<div id='twitter-wings'>\n\t";
-		$twitter_wrap .= "<h1 class='widget-title tw-title'>" . get_option('tw_title')."</h1>\n\t";
-	
+				
+		 
+					
 		$twitter_body = $this->tw_printData($data);
-		$twitter_wrap .= $twitter_body;
-		$twitter_wrap .= "\n</div>\n";
-		
+		$twitter_wrap = $twitter_body;
+				
 		if ($twitter_body != "<div class='tw-body'></div>") {
 			echo $twitter_wrap;
 		}
@@ -391,7 +389,13 @@ class TwitterWings {
 		echo sprintf(__('Configure this widget on %soptions page%s.', 'twitter-wings'), "<a href='" . get_option('siteurl') . "/wp-admin/options-general.php?page=twitter-wings/options.php'>", "</a>");
 	}
 	function widget($args){
+		
+		$title = apply_filters('widget_title', get_option('tw_title'));
+		if (empty($title)) $title = __('Twitter', 'twitter-wings');
+								
 		echo $args['before_widget'];
+		echo $args['before_title'] . $title . $args['after_title'];
+		
 		new TwitterWingsStart();
 		echo $args['after_widget'];
 	}
