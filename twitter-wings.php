@@ -83,28 +83,40 @@ class TwitterWingsStart {
 	/**
 	 * Return data to display
 	 * Calculate source, Api or Cache
+	 * When cache, it checks first for the transient. If no transient, it checks API. If API fails,
+	 * it pulls from option cache.
 	 * 
 	 */
 	private function tw_getData($force){
-		
-		if($force == 'CACHE'){
-			if(false !== ( $data = get_transient('tw_tweet_cache'))){			
+		if ($force == 'API'){
+			$data = $this->tw_getApiData();
+		}
+		elseif ($force == 'CACHE'){
+			if (false === ( $data = get_transient('tw_tweet_cache'))) {	
+				if (false === $data = get_option('tw_tweet_option_cache')) {
+					// no cache
+					return;
+				}
+			}	
+		}
+		else {
+			if (false === ($data = get_transient('tw_tweet_cache')) || $this->cache_on == false) {
+				$data = $this->tw_getApiData();
+				if (empty($data)) {
+					if (false === $data = get_option('tw_tweet_option_cache')) {
+						// no cache
+						return;
+					}
+				}
+			}
+			else {
 				return $data;
-			} else {
-				return;
 			}
 		}
 		
-		if($force == 'API'){
-			$data = $this->tw_getApiData();
-			return $data;
-		}
-		
-		if(false === ($data = get_transient('tw_tweet_cache')) || $this->cache_on == false) {
-			$data = $this->tw_getApiData();
-		}
 		return $data;
 	}
+
 	
 	/**
 	 * 
@@ -117,7 +129,7 @@ class TwitterWingsStart {
 		$api_query .= (get_option('tw_reply') == '') ? '&exclude_replies=1' : '';
 		$api_query .= (get_option('tw_retweet') == '') ? '&include_rts=1' : '';
 		$api_query .= ($this->no_of_statuses > 20) ? "&count={$this->no_of_statuses}" : '';
-		
+		$sts = array();
 		foreach ($this->users as $key=>$name) {
 			
 			if (!$name) {
@@ -215,17 +227,30 @@ class TwitterWingsStart {
 		$sts = $tmp;
 		/* end sorting */		
 			
-		/* put data in transient for latter use : cache */
+		/* put data in transient for latter use : cache */	
 		
-		if (get_option('tw_cache_time') && is_numeric(get_option('tw_cache_time'))) {
-			$min = (int)get_option('tw_cache_time');
-		} else {
-			$min = 60;
-		} 
-				
-		set_transient('tw_tweet_cache', $sts, 60*$min); // set_transient will serialize for you. 60*60 = 1 hour
+		$this->tw_save_to_cache($sts);		
+		
 		
 		return $sts;	
+	}
+	
+	/**
+	 * Save to cache, both transient and option
+	 * 
+	 * 
+	 */
+	
+	public function tw_save_to_cache($statii) {
+		if (!empty($statii)) {
+			if (get_option('tw_cache_time') && is_numeric(get_option('tw_cache_time'))) {
+				$seconds = 60 * (int)get_option('tw_cache_time');
+			} else {
+				$seconds = 60 * 60;
+			}
+			set_transient('tw_tweet_cache', $statii, $seconds);
+			update_option('tw_tweet_option_cache',$statii);
+		}
 	}
 	
 
@@ -442,10 +467,12 @@ function tw_install() {
 function tw_uninstall() {
 	delete_option('tw_active_version');
 	delete_option('tw_cache');
+	tw_delete_cache();
 }
 
 function tw_delete_cache() {
 	delete_transient('tw_tweet_cache');
+	delete_option('tw_tweet_option_cache');
 }
 
 if (get_option('tw_styles') == '')
