@@ -5,6 +5,14 @@
 	line-height : 1.6;
 }
 
+.tw-header .tw-follow {
+	margin-bottom : 10px;
+}
+
+.tw-header .widget-title {
+	margin-bottom : 5px;
+}
+
 .tw-avatar {
 	float : left;
 	margin-right : 8px;
@@ -26,7 +34,7 @@
 
 .tw-time {
 	font-size : 94%;
-	margin-bottom : 2px;
+	margin-bottom : 0;
 	line-height : 1.5;
 }
 

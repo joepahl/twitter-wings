@@ -73,7 +73,6 @@ class TwitterWingsStart {
 		if ($twitter_body != "<div class='tw-body'></div>") {
 			echo $twitter_wrap;
 		}
-		
 	}
 		
 	/**
@@ -247,7 +246,6 @@ class TwitterWingsStart {
 			update_option('tw_tweet_option_cache',$statii);
 		}
 	}
-	
 
 	/**
 	 * Print Twitter data
@@ -258,7 +256,8 @@ class TwitterWingsStart {
 		
 		$i = 0;
 		$twitter_body = "<div class='tw-body'>";
-		if (is_array($sts)) {			
+		if (is_array($sts)) {
+				
 			foreach ($sts as $key=>$val) {
 								
 				if($this->tw_checkHashes($val['text'], $val['hashtags'])) continue;
@@ -416,19 +415,64 @@ class TwitterWings {
 	function widget($args){
 		
 		$title = apply_filters('widget_title', get_option('tw_title'));
-		if (empty($title)) $title = __('Twitter', 'twitter-wings');
-								
-		echo $args['before_widget'];
-		echo $args['before_title'] . $title . $args['after_title'];
+		
+		$title = ($title) ? $args['before_title'] . $title . $args['after_title'] : '';
+		
+		if (follow_place() == 'above') {
+			$title = "<header class='tw-header'>$title" . tw_follow() . "</header>";
+		}
+									
+		echo $args['before_widget'] . $title;
 		
 		new TwitterWingsStart();
+		
+		if (follow_place() == 'below') {
+			echo "<footer>" . tw_follow() . "</footer>";
+		}
+		
 		echo $args['after_widget'];
 	}
 	function register(){
-		register_sidebar_widget('Twitter Wings', array('TwitterWings', 'widget'));
-		register_widget_control('Twitter Wings', array('TwitterWings', 'control'));
+		wp_register_sidebar_widget('twitter-wings', 'Twitter Wings', array('TwitterWings', 'widget'), array('classname' => 'tw-widget'));
+		wp_register_widget_control('twitter-wings', 'Twitter Wings', array('TwitterWings', 'control'));
 	}	
 }
+
+	function valid_color($color, $text='link') {
+		if ($color != '') {
+			$color = ($color[0] == '#') ? $color : '#' . $color;
+			$color = (preg_match('/^#[a-f0-9]{6}$/i', $color)) ? " data-$text-color='$color'" : '';
+			return $color;
+		}	
+		return '';
+	}
+
+	function tw_follow() {
+		$username = get_option('tw_follow_name');		
+		$button = (get_option('tw_follow_button') != '') ? " data-button='grey'" : '';
+		$count = (get_option('tw_follow_count') != '') ? '' : " data-show-count='false'";
+		
+		$txt_color = valid_color(get_option('tw_text_color'), 'text');
+		$lnk_color = valid_color(get_option('tw_link_color'));
+		
+		$lang = get_option('tw_follow_lang');
+		$lang = ($lang != '' && $lang != 'en') ? " data-lang='$lang'" : '';
+		
+		$follow = "<p class='tw-follow'><a href='https://twitter.com/{$username}' class='twitter-follow-button'{$button}{$count}{$txt_color}{$lnk_color}{$lang}>";
+		$follow .= sprintf(__('Follow @%s', 'twitter-wings'), $username) . "</a></p>";
+		$follow .= "<script src='//platform.twitter.com/widgets.js' type='text/javascript'></script>";
+		return $follow;
+	}
+		
+	function follow_place() {
+		if (get_option('tw_follow') != '' && get_option('tw_follow_move') != '') {
+			return 'above';
+		} elseif (get_option('tw_follow') != '' && get_option('tw_follow_move') == '') {
+			return 'below';
+		} else {
+			return false;
+		}
+	}
 
 // ENQUEUE STYLES
 function tw_styles() {
@@ -462,6 +506,15 @@ function tw_install() {
 	add_option('tw_cache_time', '60');
 	add_option('tw_styles', '');
 	add_option('tw_time_form', 'g:i A M d, Y');
+	
+	add_option('tw_follow', '');
+	add_option('tw_follow_move', '');
+	add_option('tw_follow_name', '');
+	add_option('tw_follow_count', '');
+	add_option('tw_follow_button', '');
+	add_option('tw_text_color', '');
+	add_option('tw_link_color', '');
+	add_option('tw_follow_lang', '');	
 }
 
 // Delete settings on when uninstalled

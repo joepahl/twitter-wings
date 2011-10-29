@@ -5,7 +5,6 @@ $ch = '';
 
 <div id="twitter-wings-admin">
 	<h1><?php _e('Twitter Wings', 'twitter-wings'); ?></h1>
-
 	
 	<form method="post" action="options.php">
 
@@ -20,7 +19,7 @@ $ch = '';
 		<div class="formrow">		
 			<label for="hashes"><?php _e('Hashes:', 'twitter-wings'); ?></label>
 			<input type="text" id="hashes" name="tw_hashes" class="tw_input" value="<?php echo get_option('tw_hashes'); ?>" />
-			<span class="desc"><?php _e('Only display tweets that contain one the follow hashtags. Separate hashtags with ",". e.g. <i>#STL,#fh,#AEA</i> (default: <i>blank</i>)', 'twitter-wings'); ?></span>								
+			<span class="desc"><?php _e('Filter tweets by hashtay. Only include links that contain one the follow hashtags. Separate hashtags with ",". e.g. <i>#STL,#fh,#AEA</i> (default: <i>blank</i>)', 'twitter-wings'); ?></span>								
 		</div>
 		
 		<div class="formrow">		
@@ -130,9 +129,77 @@ $ch = '';
 			<input type="checkbox" id="styles" name="tw_styles"<?php echo $ch ?> />
 			<span class="desc"><?php _e('Remove default css. I\'m using my own stylesheet. Don\'t cramp my style. (default: off)', 'twitter-wings'); ?></span>				
 		</div>
+		
+		<div class="formrow">		
+			<label><?php _e('Add Follow Button', 'twitter-wings'); ?></label>
+			<?php if(get_option('tw_follow') != ""){ $ch = ' checked'; } else { $ch = ''; } ?>
+			<input type="checkbox" id="follow" name="tw_follow"<?php echo $ch ?> />
+			<span class="desc"><?php _e('Add a Twitter follow button to my feed. (default: off)', 'twitter-wings'); ?></span>				
+		</div>
+		
+		<div class="formrow">		
+			<label><?php _e('Display Follow Button before feed', 'twitter-wings'); ?></label>
+			<?php if(get_option('tw_follow_move') != ""){ $ch = ' checked'; } else { $ch = ''; } ?>
+			<input type="checkbox" id="follow_move" name="tw_follow_move"<?php echo $ch ?> />
+			<span class="desc"><?php _e('By default, the follow button will be place below your feed. (default: off)', 'twitter-wings'); ?></span>				
+		</div>
+		
+		<div class="formrow">		
+			<label><?php _e('Follow Username', 'twitter-wings'); ?></label>
+			<input type="text" id="follow_name" name="tw_follow_name" class="tw_input" value="<?php echo (get_option('tw_follow_name')) ? get_option('tw_follow_name') : ''; ?>" />
+			<span class="desc"><?php _e('Username for follow link. (default: <i>blank</i>)', 'twitter-wings'); ?></span>				
+		</div>
+		
+		<div class="formrow">		
+			<label><?php _e('Button Style', 'twitter-wings'); ?></label>
+			<?php if(get_option('tw_follow_button') != ""){ $ch = ' checked'; } else { $ch = ''; } ?>
+			<input type="checkbox" id="follow_button" name="tw_follow_button"<?php echo $ch ?> />
+			<span class="desc"><?php _e('Use gray button instead of default blue. (default: off)', 'twitter-wings'); ?></span>				
+		</div>
+		
+		<div class="formrow">		
+			<label><?php _e('Show Follow Count', 'twitter-wings'); ?></label>
+			<?php if(get_option('tw_follow_count') != ""){ $ch = ' checked'; } else { $ch = ''; } ?>
+			<input type="checkbox" id="follow_count" name="tw_follow_count"<?php echo $ch ?> />
+			<span class="desc"><?php _e('Display your followers. (default: off)', 'twitter-wings'); ?></span>				
+		</div>
+		
+		<div class="formrow">		
+			<label><?php _e('Text Color', 'twitter-wings'); ?></label>
+			<input type="text" id="text_color" name="tw_text_color" class="tw_input" value="<?php echo (get_option('tw_text_color')) ? get_option('tw_text_color') : ''; ?>" />
+			<span class="desc"><?php _e('Hexidecimal color code. (default: #800080)', 'twitter-wings'); ?></span>				
+		</div>
+		
+		<div class="formrow last">		
+			<label><?php _e('Link Color', 'twitter-wings'); ?></label>
+			<input type="text" id="link_color" name="tw_link_color" class="tw_input" value="<?php echo (get_option('tw_link_color')) ? get_option('tw_link_color') : ''; ?>" />
+			<span class="desc"><?php _e('Hexidecimal color code. (default: #800080)', 'twitter-wings'); ?></span>				
+		</div>
+		
+		<div class="formrow">		
+			<label><?php _e('Follow language', 'twitter-wings'); ?></label>
+			
+			<?php $opt = (get_option('tw_follow_lang') != "") ? get_option('tw_follow_lang') : $opt = ''; ?>
+					
+			<select id="follow_lang" name="tw_follow_lang">
+				<option value="nl"<?php if($opt == 'nl'){ ?> selected<?php } ?>><?php _e('Dutch', 'twitter-wings'); ?></option>
+				<option value="en"<?php if($opt == 'en' || $opt == ''){ ?> selected<?php } ?>><?php _e('English', 'twitter-wings'); ?></option>
+				<option value="fr"<?php if($opt == 'fr'){ ?> selected<?php } ?>><?php _e('French', 'twitter-wings'); ?></option>
+				<option value="de"<?php if($opt == 'de'){ ?> selected<?php } ?>><?php _e('German', 'twitter-wings'); ?></option>
+				<option value="id"<?php if($opt == 'id'){ ?> selected<?php } ?>><?php _e('Indonesian', 'twitter-wings'); ?></option>
+				<option value="it"<?php if($opt == 'it'){ ?> selected<?php } ?>><?php _e('Italian', 'twitter-wings'); ?></option>
+				<option value="ja"<?php if($opt == 'ja'){ ?> selected<?php } ?>><?php _e('Japanese', 'twitter-wings'); ?></option>
+				<option value="ko"<?php if($opt == 'ko'){ ?> selected<?php } ?>><?php _e('Korean', 'twitter-wings'); ?></option>
+				<option value="pt"<?php if($opt == 'pt'){ ?> selected<?php } ?>><?php _e('Portuguese', 'twitter-wings'); ?></option>
+				<option value="ru"<?php if($opt == 'ru'){ ?> selected<?php } ?>><?php _e('Russian', 'twitter-wings'); ?></option>
+				<option value="es"<?php if($opt == 'es'){ ?> selected<?php } ?>><?php _e('Spanish', 'twitter-wings'); ?></option>
+				<option value="tr"<?php if($opt == 'tr'){ ?> selected<?php } ?>><?php _e('Turkish', 'twitter-wings'); ?></option>
+			</select>
+			<span class="desc"><?php _e('Language for your button. (default: English)', 'twitter-wings'); ?></span>				
+		</div>
 
 		<input type="hidden" name="action" value="update" />
-        <input type="hidden" name="page_options" value="tw_usernames,tw_hashes,tw_number,tw_photos,tw_user_titles,tw_screennames,tw_https,tw_chashes,tw_removehashes,tw_cache,tw_cache_time,tw_title,tw_time_below,tw_retweet,tw_reply,tw_user_display,tw_styles,tw_time_form" />
+        <input type="hidden" name="page_options" value="tw_usernames,tw_hashes,tw_number,tw_photos,tw_user_titles,tw_screennames,tw_https,tw_chashes,tw_removehashes,tw_cache,tw_cache_time,tw_title,tw_time_below,tw_retweet,tw_reply,tw_user_display,tw_styles,tw_time_form,tw_follow_lang,tw_link_color,tw_text_color,tw_follow_count,tw_follow_button,tw_follow_name,tw_follow,tw_follow_move" />
 		
 		<input type="submit" class="button-primary" value="<?php _e('Save Settings', 'twitter-wings'); ?>" />
 	
