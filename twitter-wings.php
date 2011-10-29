@@ -53,9 +53,7 @@ class TwitterWingsStart {
 	function __construct(){
 		$sitename = strtolower(str_replace(" ","-",get_bloginfo('name')));
 		$force = $_GET['tw_force']; // force source from url
-		
-		
-		
+				
 		$cache_on = get_option('tw_cache');
 		$this->cache_on = $cache_on;
 		
@@ -68,9 +66,7 @@ class TwitterWingsStart {
 		$this->hashes = explode(",",$hashes);
 
 		$data = $this->tw_getData($force);
-				
-		 
-					
+									
 		$twitter_body = $this->tw_printData($data);
 		$twitter_wrap = $twitter_body;
 				
@@ -231,7 +227,6 @@ class TwitterWingsStart {
 		
 		$this->tw_save_to_cache($sts);		
 		
-		
 		return $sts;	
 	}
 	
@@ -316,7 +311,12 @@ class TwitterWingsStart {
 	 */
 	private function tw_showTime($ts){
 		$c = time() - $ts;
-		$nd = date('g:i A M d\, Y',$ts);
+		
+		$time_form = (get_option('tw_time_form') != '') ? get_option('tw_time_form') : 'g:i A M d\, Y';
+		$nd = date($time_form, $ts);
+				
+		if (!strtotime($nd))
+			$nd = date('g:i A M d\, Y', $ts);
 		
 		if ($c < 60) return $c . ' seconds ago';
 		elseif ($c < 3600) return (int)($c/60) . ' minutes ago';
@@ -461,6 +461,7 @@ function tw_install() {
 	add_option('tw_cache', '1');
 	add_option('tw_cache_time', '60');
 	add_option('tw_styles', '');
+	add_option('tw_time_form', 'g:i A M d, Y');
 }
 
 // Delete settings on when uninstalled

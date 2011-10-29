@@ -57,6 +57,12 @@ $ch = '';
 		</div>
 		
 		<div class="formrow">		
+			<label><?php _e('Format Timestamp', 'twitter-wings'); ?></label>
+			<input type="text" id="time_form" name="tw_time_form" class="tw_input" value="<?php echo (get_option('tw_time_form')) ? get_option('tw_time_form') : 'g:i A M d, Y'; ?>" />
+			<span class="desc"><?php _e('Use php date formatting. (default: g:i A M d, Y)', 'twitter-wings'); ?></span>					
+		</div>
+		
+		<div class="formrow">		
 			<label><?php _e('Timestamp Below Text', 'twitter-wings'); ?></label>
 			<?php if(get_option('tw_time_below') != ""){ $ch = ' checked'; } else { $ch = ''; } ?>
 			<input type="checkbox" id="time_below" name="tw_time_below"<?php echo $ch ?> />
@@ -126,7 +132,7 @@ $ch = '';
 		</div>
 
 		<input type="hidden" name="action" value="update" />
-        <input type="hidden" name="page_options" value="tw_usernames,tw_hashes,tw_number,tw_photos,tw_user_titles,tw_screennames,tw_https,tw_chashes,tw_removehashes,tw_cache,tw_cache_time,tw_title,tw_time_below,tw_retweet,tw_reply,tw_user_display,tw_styles" />
+        <input type="hidden" name="page_options" value="tw_usernames,tw_hashes,tw_number,tw_photos,tw_user_titles,tw_screennames,tw_https,tw_chashes,tw_removehashes,tw_cache,tw_cache_time,tw_title,tw_time_below,tw_retweet,tw_reply,tw_user_display,tw_styles,tw_time_form" />
 		
 		<input type="submit" class="button-primary" value="<?php _e('Save Settings', 'twitter-wings'); ?>" />
 	
