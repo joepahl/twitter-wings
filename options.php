@@ -126,11 +126,11 @@ $ch = '';
 			<span class="desc"><?php _e('Using cache will improve your page load. Data will be saved in cache at the increment of time set below. (default: on)', 'twitter-wings'); ?></span>				
 		</div>
 		
-		<div class="formrow cache-time">		
-			<label for="cache_time"><?php _e('Cache Expire Time:', 'twitter-wings'); ?></label>
-			<input type="number" min="1" max="120" id="cache_time" name="tw_cache_time" class="tw_input short" value="<?php echo get_option('tw_cache_time'); ?>" />
-			<span class="desc"><?php _e('Number of minutes to use cached data before rechecking the Twitter API. (default: 60)', 'twitter-wings'); ?></span>				
-		</div>
+			<div class="formrow cache-time">		
+				<label for="cache_time"><?php _e('Cache Expire Time:', 'twitter-wings'); ?></label>
+				<input type="number" min="1" max="120" id="cache_time" name="tw_cache_time" class="tw_input short" value="<?php echo get_option('tw_cache_time'); ?>" />
+				<span class="desc"><?php _e('Number of minutes to use cached data before rechecking the Twitter API. (default: 60)', 'twitter-wings'); ?></span>				
+			</div>
 		
 		<div class="formrow">		
 			<label><?php _e('Remove Stylesheet', 'twitter-wings'); ?></label>
@@ -225,7 +225,7 @@ $ch = '';
 		// CACHE
 		jQuery('div.cache-time').hide();
 	
-		if (jQuery('div.cache input').attr("checked")) {
+		if (jQuery('div.cache input').prop("checked")) {
 			jQuery('div.cache-time').show();
 		}
 		
@@ -236,23 +236,21 @@ $ch = '';
 		// HASHTAG FILTER
 		jQuery('div.hash-terms').hide();
 	
-		if (jQuery('div.hashtag input').attr("checked")) {
+		if (jQuery('div.hashtag input').prop("checked")) {
 			jQuery('div.hash-terms').show();
 		}
 		
 		jQuery('div.hashtag input').change(function() {
-							
 			if (jQuery('div.hashtag input').prop("checked") == false) {
 				jQuery('div.hash-terms input').val('');
 			}
-		
 			jQuery('div.hash-terms').toggle('fast');
 		});
 		
 		// DISPLAY NAME
 		jQuery('div.display-name').hide();
 	
-		if (jQuery('div.username input').attr("checked")) {
+		if (jQuery('div.username input').prop("checked")) {
 			jQuery('div.display-name').show();
 		}
 		
@@ -263,7 +261,7 @@ $ch = '';
 		// FOLLOW BUTTON
 		jQuery('div.follow-block').hide();
 	
-		if (jQuery('div.add-follow input').attr("checked")) {
+		if (jQuery('div.add-follow input').prop("checked")) {
 			jQuery('div.follow-block').show();
 		}
 		
