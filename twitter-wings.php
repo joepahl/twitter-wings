@@ -26,6 +26,14 @@ Text Domain: twitter-wings
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+/* Load jQuery on Options page */
+function tw_admin_scripts() {
+    wp_deregister_script('jquery');
+    wp_register_script('jquery', 'https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js');
+    wp_enqueue_style( 'jquery' );
+}
+add_action('admin_enqueue_scripts', 'tw_admin_scripts');
+
 /* options page */
 $options_page = get_option('siteurl') . '/wp-admin/admin.php?page=twitter-wings/options.php';
 
