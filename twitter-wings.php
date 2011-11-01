@@ -2,7 +2,7 @@
 /*
 Plugin Name: Twitter Wings
 Plugin URI: https://github.com/joepahl/twitter-wings
-Version: 1.0
+Version: 1.1
 Description: Display tweets from one or more users. Output the display URL for links, and hide the t.co URL. Filter tweets by hashtags and/or hide hashtags altogether. Built in caching.
 Author: Joe Pahl
 Author URI: http://joepahl.is
@@ -290,7 +290,7 @@ class TwitterWingsStart {
 				
 				$username = strtolower($val['username']);
 				
-				$timestamp = "<p class='tw-time'><time pubdate datetime='" . strftime('%FT%TZ', $val['timestamp']) . "'><a href='{$val['permalink']}' title='" . __('Permalink', 'twitter-wings') . "'>{$this->tw_showTime($val['timestamp'])}</a></time></p>";
+				$timestamp = "<p class='tw-time'><data itemprop='datePublished' value='" . date('c', $val['timestamp']) . "'><a href='{$val['permalink']}' title='" . __('Permalink', 'twitter-wings') . "'>{$this->tw_showTime($val['timestamp'])}</a></data></p>";
 
 				if (get_option('tw_time_below') == '') {
 					$time_above = $timestamp;
@@ -383,7 +383,6 @@ class TwitterWingsStart {
 				$text =  preg_replace("/#{$hashtag}\b/iU", "<a href='http://twitter.com/search?q=%23{$hashtag}' class='tw-hashtag'>#<span>{$hashtag}</span></a>", $text);
 			}
 		}
-			
 		return $text;
 	}
 
@@ -446,41 +445,41 @@ class TwitterWings {
 	}	
 }
 
-	function valid_color($color, $text='link') {
-		if ($color != '') {
-			$color = ($color[0] == '#') ? $color : '#' . $color;
-			$color = (preg_match('/^#[a-f0-9]{6}$/i', $color)) ? " data-$text-color='$color'" : '';
-			return $color;
-		}	
-		return '';
-	}
+function valid_color($color, $text='link') {
+	if ($color != '') {
+		$color = ($color[0] == '#') ? $color : '#' . $color;
+		$color = (preg_match('/^#[a-f0-9]{6}$/i', $color)) ? " data-$text-color='$color'" : '';
+		return $color;
+	}	
+	return '';
+}
 
-	function tw_follow() {
-		$username = get_option('tw_follow_name');		
-		$button = (get_option('tw_follow_button') != '') ? " data-button='grey'" : '';
-		$count = (get_option('tw_follow_count') != '') ? '' : " data-show-count='false'";
-		
-		$txt_color = valid_color(get_option('tw_text_color'), 'text');
-		$lnk_color = valid_color(get_option('tw_link_color'));
-		
-		$lang = get_option('tw_follow_lang');
-		$lang = ($lang != '' && $lang != 'en') ? " data-lang='$lang'" : '';
-		
-		$follow = "<p class='tw-follow'><a href='https://twitter.com/{$username}' class='twitter-follow-button'{$button}{$count}{$txt_color}{$lnk_color}{$lang}>";
-		$follow .= sprintf(__('Follow @%s', 'twitter-wings'), $username) . "</a></p>";
-		$follow .= "<script src='//platform.twitter.com/widgets.js' type='text/javascript'></script>";
-		return $follow;
+function tw_follow() {
+	$username = get_option('tw_follow_name');		
+	$button = (get_option('tw_follow_button') != '') ? " data-button='grey'" : '';
+	$count = (get_option('tw_follow_count') != '') ? '' : " data-show-count='false'";
+	
+	$txt_color = valid_color(get_option('tw_text_color'), 'text');
+	$lnk_color = valid_color(get_option('tw_link_color'));
+	
+	$lang = get_option('tw_follow_lang');
+	$lang = ($lang != '' && $lang != 'en') ? " data-lang='$lang'" : '';
+	
+	$follow = "<p class='tw-follow'><a href='https://twitter.com/{$username}' class='twitter-follow-button'{$button}{$count}{$txt_color}{$lnk_color}{$lang}>";
+	$follow .= sprintf(__('Follow @%s', 'twitter-wings'), $username) . "</a></p>";
+	$follow .= "<script src='//platform.twitter.com/widgets.js' type='text/javascript'></script>";
+	return $follow;
+}
+	
+function follow_place() {
+	if (get_option('tw_follow') != '' && get_option('tw_follow_move') != '') {
+		return 'above';
+	} elseif (get_option('tw_follow') != '' && get_option('tw_follow_move') == '') {
+		return 'below';
+	} else {
+		return false;
 	}
-		
-	function follow_place() {
-		if (get_option('tw_follow') != '' && get_option('tw_follow_move') != '') {
-			return 'above';
-		} elseif (get_option('tw_follow') != '' && get_option('tw_follow_move') == '') {
-			return 'below';
-		} else {
-			return false;
-		}
-	}
+}
 
 // ENQUEUE STYLES
 function tw_styles() {
