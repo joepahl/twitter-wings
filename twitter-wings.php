@@ -270,7 +270,7 @@ class TwitterWingsStart {
 								
 				if($this->tw_checkHashes($val['text'], $val['hashtags'])) continue;
 				
-				$img = (get_option('tw_photos') != '') ? "<div class='tw-avatar'><a href='http://www.twitter.com/{$val['username']}' title='@{$val['username']} on Twitter'><img src='{$val['avatar']}' height=48 width=48 /></a></div>" : '';
+				$img = (get_option('tw_photos') != '') ? "<div class='tw-avatar'><a href='http://www.twitter.com/{$val['username']}' title='@{$val['username']} on Twitter'><img src='{$val['avatar']}' alt='{$val['username']}' height=48 width=48 /></a></div>" : '';
 				
 				$hd_o = '';
 				$hd_c = '';
