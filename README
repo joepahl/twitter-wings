@@ -54,4 +54,3 @@ More information about Twitter Wings is available at https://github.com/joepahl/
 = 1.1 =
 * added alt attribute to avatar image
 * replaced strftime function, with generic date function
-* replaced <time> element with <data>, per HTML5 spec change (hopefully temporary)
