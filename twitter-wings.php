@@ -290,7 +290,7 @@ class TwitterWingsStart {
 				
 				$username = strtolower($val['username']);
 				
-				$timestamp = "<p class='tw-time'><data itemprop='datePublished' value='" . date('c', $val['timestamp']) . "'><a href='{$val['permalink']}' title='" . __('Permalink', 'twitter-wings') . "'>{$this->tw_showTime($val['timestamp'])}</a></data></p>";
+				$timestamp = "<p class='tw-time'><time pubdate datetime='" . date('c', $val['timestamp']) . "'><a href='{$val['permalink']}' title='" . __('Permalink', 'twitter-wings') . "'>{$this->tw_showTime($val['timestamp'])}</a></time></p>";
 
 				if (get_option('tw_time_below') == '') {
 					$time_above = $timestamp;
