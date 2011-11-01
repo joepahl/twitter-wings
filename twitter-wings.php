@@ -494,7 +494,7 @@ register_deactivation_hook(__FILE__, 'tw_uninstall');
 // Default Settings
 // When plugin is activated, update version, and set any new settings to default
 function tw_install() {
-	add_option('tw_active_version', '1.0');
+	add_option('tw_active_version', '1.1');
 	add_option('tw_usernames', 'joepahl,bsdeluxe,dylanized');
 	add_option('tw_hashes', '');
 	add_option('tw_title', 'Twitter');
