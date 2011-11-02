@@ -210,6 +210,7 @@ class TwitterWingsStart {
 				
 				$tmp['time'] 		 = (string)$x->created_at;
 				$tmp['timestamp']	 = (string)strtotime($x->created_at);
+				$tmp['utc_offset']	 = (string)($x->user->utc_offset);
 				$tmp['name'] 		 = (string)$x->user->name;
 				$tmp['username']	 = (string)$x->user->screen_name;
 				$tmp['avatar']		 = (string)$x->user->profile_image_url;
@@ -290,7 +291,19 @@ class TwitterWingsStart {
 				
 				$username = strtolower($val['username']);
 				
-				$timestamp = "<p class='tw-time'><time pubdate datetime='" . date('c', $val['timestamp']) . "'><a href='{$val['permalink']}' title='" . __('Permalink', 'twitter-wings') . "'>{$this->tw_showTime($val['timestamp'])}</a></time></p>";
+				$datetime = date('c', $val['timestamp']);
+								
+				$offset = $val['utc_offset'];
+				$plus_min = '+';
+				
+				if ($offset < 0) {
+					$plus_min = '-';
+					$offset = $offset * -1;
+				}
+				
+				$datetime = substr($datetime, 0, -6) . $plus_min. date('H:i', $offset);
+								
+				$timestamp = "<p class='tw-time'><time pubdate datetime='" . $datetime . "'><a href='{$val['permalink']}' title='" . __('Permalink', 'twitter-wings') . "'>{$this->tw_showTime($val['timestamp'])}</a></time></p>";
 
 				if (get_option('tw_time_below') == '') {
 					$time_above = $timestamp;
