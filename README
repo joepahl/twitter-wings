@@ -53,7 +53,7 @@ More information about Twitter Wings is available at https://github.com/joepahl/
 
 = 1.2 =
 * added support for local timezone
-* local timezone determined by users timezone setting in WordPress admin
+* local timezone determined by user's timezone setting in WordPress admin
 
 = 1.1 =
 * added alt attribute to avatar image
