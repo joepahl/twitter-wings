@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Twitter Wings
-Plugin URI: https://github.com/joepahl/twitter-wings
+Plugin URI: http://wordpress.org/extend/plugins/twitter-wings/
 Version: 1.1
 Description: Display tweets from one or more users. Output the display URL for links, and hide the t.co URL. Filter tweets by hashtags and/or hide hashtags altogether. Built in caching.
 Author: Joe Pahl
@@ -507,7 +507,7 @@ register_deactivation_hook(__FILE__, 'tw_uninstall');
 // Default Settings
 // When plugin is activated, update version, and set any new settings to default
 function tw_install() {
-	add_option('tw_active_version', '1.0');
+	add_option('tw_active_version', '1.1');
 	add_option('tw_usernames', 'joepahl,bsdeluxe,dylanized');
 	add_option('tw_hashes', '');
 	add_option('tw_title', 'Twitter');

@@ -54,3 +54,8 @@ More information about Twitter Wings is available at https://github.com/joepahl/
 = 1.1 =
 * added alt attribute to avatar image
 * replaced strftime function, with generic date function
+
+== Upgrade Notice ==
+
+= 1.1 =
+This update adds an alt attribute to the avatar image so the plugin validates in HTML5. The strftime function was causing issues for some users, and has been replace with the date function.
