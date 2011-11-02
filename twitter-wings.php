@@ -353,7 +353,7 @@ class TwitterWingsStart {
 				// fallback for links sans-display_url
 				if (!$display_url)							
 					$display_url = $url;
-				$text = preg_replace("@{$url}([^A-Za-z0-9\"'<]|\s|$)@iu", "<a href='{$url}' class='tw-url'><span>{$display_url}<span></a>$1", $text); // using @ to delimit, as / shows up in $url
+				$text = preg_replace("@{$url}([^A-Za-z0-9\"'<]|\s|$)@iu", "<a href='{$url}' class='tw-url'><span>{$display_url}</span></a>$1", $text); // using @ to delimit, as / shows up in $url
 			}
 		}	
 			
