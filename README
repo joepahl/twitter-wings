@@ -54,6 +54,7 @@ More information about Twitter Wings is available at https://github.com/joepahl/
 = 1.1 =
 * added alt attribute to avatar image
 * replaced strftime function, with generic date function
+* fix timezone (daylight savings ignored by twitter)
 
 == Upgrade Notice ==
 
