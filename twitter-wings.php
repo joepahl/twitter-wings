@@ -2,7 +2,7 @@
 /*
 Plugin Name: Twitter Wings
 Plugin URI: http://wordpress.org/extend/plugins/twitter-wings/
-Version: 1.1
+Version: 1.2
 Description: Display tweets from one or more users. Output the display URL for links, and hide the t.co URL. Filter tweets by hashtags and/or hide hashtags altogether. Built in caching.
 Author: Joe Pahl
 Author URI: http://joepahl.is
@@ -210,7 +210,6 @@ class TwitterWingsStart {
 				
 				$tmp['time'] 		 = (string)$x->created_at;
 				$tmp['timestamp']	 = (string)strtotime($x->created_at);
-				$tmp['utc_offset']	 = (string)($x->user->utc_offset);
 				$tmp['name'] 		 = (string)$x->user->name;
 				$tmp['username']	 = (string)$x->user->screen_name;
 				$tmp['avatar']		 = (string)$x->user->profile_image_url;
@@ -290,10 +289,8 @@ class TwitterWingsStart {
 				$text = $this->tw_parseStatus($val['text'], $val['urls'], $val['mentions'], $val['username'], $val['hashtags']);
 				
 				$username = strtolower($val['username']);
-				
-				$offset = $val['utc_offset'];
-																				
-				$timestamp = "<p class='tw-time'><time pubdate datetime='" . date('c', $val['timestamp']) . "'><a href='{$val['permalink']}' title='" . __('Permalink', 'twitter-wings') . "'>{$this->tw_showTime($val['timestamp'],$offset)}</a></time></p>";
+																								
+				$timestamp = "<p class='tw-time'><time pubdate datetime='" . date('c', $val['timestamp']) . "'><a href='{$val['permalink']}' title='" . __('Permalink', 'twitter-wings') . "'>{$this->tw_showTime($val['timestamp'])}</a></time></p>";
 
 				if (get_option('tw_time_below') == '') {
 					$time_above = $timestamp;
@@ -319,16 +316,17 @@ class TwitterWingsStart {
 	 * 
 	 * 
 	 */
-	private function tw_showTime($ts,$tz){
+	private function tw_showTime($ts){
 		$c = time() - $ts;
 		
-		if ($c < 60) { 
+		if ($c < 60) {
 			return $c . ' seconds ago'; 
 		} elseif ($c < 3600) { 
 			return (int)($c/60) . ' minutes ago'; 
 		} elseif ($c < 3600*24) { 
 			return (int)($c/3600) . ' hours ago'; 
 		} else {
+			$tz = get_option('gmt_offset') * 3600;
 			$time_form = (get_option('tw_time_form') != '') ? get_option('tw_time_form') : 'g:i A M d\, Y';
 			$nd = date($time_form, $ts+$tz);
 			if (!strtotime($nd))
@@ -501,7 +499,7 @@ register_deactivation_hook(__FILE__, 'tw_uninstall');
 // Default Settings
 // When plugin is activated, update version, and set any new settings to default
 function tw_install() {
-	add_option('tw_active_version', '1.1');
+	add_option('tw_active_version', '1.2');
 	add_option('tw_usernames', 'joepahl,bsdeluxe,dylanized');
 	add_option('tw_hashes', '');
 	add_option('tw_title', 'Twitter');
