@@ -291,19 +291,9 @@ class TwitterWingsStart {
 				
 				$username = strtolower($val['username']);
 				
-				$datetime = date('c', $val['timestamp']);
-								
 				$offset = $val['utc_offset'];
-				$plus_min = '+';
-				
-				if ($offset < 0) {
-					$plus_min = '-';
-					$offset = $offset * -1;
-				}
-				
-				$datetime = substr($datetime, 0, -6) . $plus_min. date('H:i', $offset);
-								
-				$timestamp = "<p class='tw-time'><time pubdate datetime='" . $datetime . "'><a href='{$val['permalink']}' title='" . __('Permalink', 'twitter-wings') . "'>{$this->tw_showTime($val['timestamp'])}</a></time></p>";
+																				
+				$timestamp = "<p class='tw-time'><time pubdate datetime='" . date('c', $val['timestamp']) . "'><a href='{$val['permalink']}' title='" . __('Permalink', 'twitter-wings') . "'>{$this->tw_showTime($val['timestamp'],$offset)}</a></time></p>";
 
 				if (get_option('tw_time_below') == '') {
 					$time_above = $timestamp;
@@ -329,19 +319,23 @@ class TwitterWingsStart {
 	 * 
 	 * 
 	 */
-	private function tw_showTime($ts){
+	private function tw_showTime($ts,$tz){
 		$c = time() - $ts;
 		
-		$time_form = (get_option('tw_time_form') != '') ? get_option('tw_time_form') : 'g:i A M d\, Y';
-		$nd = date($time_form, $ts);
-				
-		if (!strtotime($nd))
-			$nd = date('g:i A M d\, Y', $ts);
-		
-		if ($c < 60) return $c . ' seconds ago';
-		elseif ($c < 3600) return (int)($c/60) . ' minutes ago';
-		elseif ($c < 3600*24) return (int)($c/3600) . ' hours ago';
-		else return $nd;
+		if ($c < 60) { 
+			return $c . ' seconds ago'; 
+		} elseif ($c < 3600) { 
+			return (int)($c/60) . ' minutes ago'; 
+		} elseif ($c < 3600*24) { 
+			return (int)($c/3600) . ' hours ago'; 
+		} else {
+			$time_form = (get_option('tw_time_form') != '') ? get_option('tw_time_form') : 'g:i A M d\, Y';
+			$nd = date($time_form, $ts+$tz);
+			if (!strtotime($nd))
+				$nd = date('g:i A M d\, Y', $ts+$tz);
+			
+			return $nd;
+		}
 	}
 	
 	/**
