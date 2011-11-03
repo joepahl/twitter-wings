@@ -50,7 +50,7 @@ function TwitterWings(){
 		$title = "<header class='tw-header'>$title" . tw_follow() . "</header>";
 	}
 	
-	echo "<div id='twitter-wings' class='tw-widget'><h3 class='tw-title'>$title</h3>";
+	echo "<aside id='twitter-wings' class='tw-widget'><h3 class='tw-title'>$title</h3>";
 	
 	new TwitterWingsStart;
 	
@@ -58,7 +58,7 @@ function TwitterWings(){
 		echo "<footer>" . tw_follow() . "</footer>";
 	}
 	
-	echo "</div>";
+	echo "</aside>";
 }
 
 class TwitterWingsStart {
