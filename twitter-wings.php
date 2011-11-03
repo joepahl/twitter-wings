@@ -44,13 +44,13 @@ function tw_options_page() {
 
 function TwitterWings(){
 	
-	$title = apply_filters('widget_title', get_option('tw_title'));
+	$title = "<h3 class='tw-title'>" . apply_filters('widget_title', get_option('tw_title')) . "</h3>";
 	
 	if (follow_place() == 'above') {
 		$title = "<header class='tw-header'>$title" . tw_follow() . "</header>";
 	}
 	
-	echo "<aside id='twitter-wings' class='tw-widget'><h3 class='tw-title'>$title</h3>";
+	echo "<aside id='twitter-wings' class='tw-widget'>$title";
 	
 	new TwitterWingsStart;
 	
