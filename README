@@ -1,7 +1,7 @@
 === Twitter Wings ===
 Contributors: joepahl, bsdeluxe
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5RR6SHW9UBJSA
-Tags: twitter, sidebar, widget, pretty links, follow button
+Tags: twitter, sidebar, widget, HTML5, plugin, links
 Requires at least: 3.0
 Tested up to: 3.2
 Stable tag: trunk
@@ -24,6 +24,7 @@ With Twitter Wings you can:
 * strip hashtags from tweets
 * show/hide retweets
 * show/hide replies
+* HTML5 semantic markup
 * implement as a widget or by using `TwitterWings()` template function
 
 More information about Twitter Wings is available at https://github.com/joepahl/twitter-wings
