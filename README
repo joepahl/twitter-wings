@@ -50,7 +50,21 @@ More information about Twitter Wings is available at https://github.com/joepahl/
 2. Twitter Wings options page
 3. Sidebar widget
 
+== Frequently Asked Questions ==
+
+= My tweets are not displaying. Where are they? =
+
+There are a couple of reasons that this may happen. One is that Twitter's API rate limit has been exhausted. The rate limit is refreshed hourly. If you are on a shared server this can be caused by someone else's site.
+
+Another possibility is that your Twitter account is protected. Private accounts cannot be accessed via the public API.
+
+A future version of the plugin will include an option to register a private API key. This will prevent both of these issues.
+
 == Changelog ==
+
+= 1.2.1 =
+* fix jQuery conflict that broke WordPress admin menus, making them undraggable
+* add FAQ section to readme file
 
 = 1.2 =
 * added support for local timezone
@@ -61,6 +75,9 @@ More information about Twitter Wings is available at https://github.com/joepahl/
 * replaced strftime function, with generic date function
 
 == Upgrade Notice ==
+
+= 1.2.1 =
+This update fixes a jQuery conflict that was rendering WordPress admin menus undraggable.
 
 = 1.2 =
 This update adds local timezone support. Local timezone is determined by the WordPress admin setting. The datetime attribute remains in GMT.
