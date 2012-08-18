@@ -1,0 +1,78 @@
+#twitter-wings-admin header {
+		margin-bottom : 0.5em;
+	}
+	
+#twitter-wings-admin .tw-admin-box {
+	float : right;
+	width : 26%;
+	padding : 0.25em 1% 1.25em 1.6%;
+	border-radius: 3px 3px 3px 3px;
+	margin : 1em 0 1.5em 0;
+	border : 1px solid #E5E5E5;
+	background : #F9F9F9;
+	max-width : 310px;
+	clear : right;
+}
+
+#twitter-wings-admin .tw-feed {
+	clear : right;
+	margin-top : 0;
+}
+
+#twitter-wings-admin .tw-content header {
+	margin : 0;
+}
+
+#twitter-wings-admin #twitter_wings_form {
+	width : 68%;
+}
+
+#twitter_wings_form h3 {
+	padding-left : 0.75%;
+}
+
+#twitter-wings-admin .formrow {
+	border-bottom : 1px solid #E5E5E5;
+	padding-bottom : 1em;
+	padding-left : 0.75%;
+}
+
+#twitter-wings-admin label { 
+	color : #333; 
+	display : block;
+	margin-bottom : 3px;
+}
+
+#twitter-wings-admin .radio-label { 
+	margin : 0 0 3px 20px;
+}
+
+#twitter-wings-admin input[type="radio"],
+#twitter-wings-admin input[type="checkbox"] {
+	float : left;
+	clear : left;
+}
+
+#twitter-wings-admin .tw_input { 
+	width: 40%;
+	display : block;
+	margin-bottom : 5px;
+}
+
+#twitter-wings-admin .short {
+	width : 80px;
+} 
+
+#follow_lang { 
+	margin-bottom: 5px;
+}
+
+#twitter-wings-admin .desc {
+	color: #666; 
+	display : block; 
+	clear : left;
+} 
+
+.button-primary { 
+	margin-top: 15px; 
+}

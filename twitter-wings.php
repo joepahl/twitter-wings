@@ -2,14 +2,14 @@
 /*
 Plugin Name: Twitter Wings
 Plugin URI: http://wordpress.org/extend/plugins/twitter-wings/
-Version: 1.2.1
+Version: 2.0.0
 Description: Display tweets from one or more users. Output the display URL for links, and hide the t.co URL. Filter tweets by hashtags and/or hide hashtags altogether. Built in caching.
 Author: Joe Pahl
 Author URI: http://joepahl.is
 Text Domain: twitter-wings
 */
 
-/*  Copyright 2011  Joe Pahl  (emailme@joepahl.is)
+/*  Copyright 2012  Joe Pahl (emailme@joepahl.is)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,70 +26,90 @@ Text Domain: twitter-wings
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-/* options page */
-$options_page = get_option('siteurl') . '/wp-admin/admin.php?page=twitter-wings/options.php';
-
-/* Adds our admin options under "Options" */
-function tw_options_page() {
-	add_options_page('Twitter Wings', 'Twitter Wings', 10, 'twitter-wings/options.php');
+// don't load directly
+if (!function_exists('is_admin')) {
+    header('Status: 403 Forbidden');
+    header('HTTP/1.1 403 Forbidden');
+    exit();
 }
 
-function TwitterWings(){
+define( 'TWITTER_WINGS_DIR', WP_PLUGIN_DIR . '/twitter-wings' );
+define( 'TWITTER_WINGS_URL', WP_PLUGIN_URL . '/twitter-wings' );
+
+if (!class_exists('Twitter_Wings')) :
+
+class Twitter_Wings {
+
+	function Twitter_Wings() {	
+		add_action('admin_init', array(&$this,'init_admin') );
+		add_action('init', array(&$this,'init') );
+		add_action('admin_menu', array(&$this,'add_pages') );
+		add_action('widgets_init', array('Twitter_Wings_Widget', 'register'));
+		
+		register_activation_hook( __FILE__, array(&$this,'activate') );
+		register_deactivation_hook( __FILE__, array(&$this,'deactivate') );
+	}
+
+	function activate($networkwide) {
+		global $wpdb;
+
+		if (function_exists('is_multisite') && is_multisite()) {
+			// check if it is a network activation - if so, run the activation function for each blog id
+			if ($networkwide) {
+				$old_blog = $wpdb->blogid;
+				// Get all blog ids
+				$blogids = $wpdb->get_col($wpdb->prepare("SELECT blog_id FROM $wpdb->blogs"));
+				foreach ($blogids as $blog_id) {
+					switch_to_blog($blog_id);
+					$this->_activate();
+				}
+				switch_to_blog($old_blog);
+				return;
+			}	
+		} 
+		$this->_activate();		
+	}
+
+	function deactivate($networkwide) {
+		global $wpdb;
+
+		if (function_exists('is_multisite') && is_multisite()) {
+			// check if it is a network activation - if so, run the activation function for each blog id
+			if ($networkwide) {
+				$old_blog = $wpdb->blogid;
+				// Get all blog ids
+				$blogids = $wpdb->get_col($wpdb->prepare("SELECT blog_id FROM $wpdb->blogs"));
+				foreach ($blogids as $blog_id) {
+					switch_to_blog($blog_id);
+					$this->_deactivate();
+				}
+				switch_to_blog($old_blog);
+				return;
+			}	
+		} 
+		$this->_deactivate();		
+	}	
 	
-	$title = "<h3 class='tw-title'>" . apply_filters('widget_title', get_option('tw_title')) . "</h3>";
-	
-	if (follow_place() == 'above') {
-		$title = "<header class='tw-header'>$title" . tw_follow() . "</header>";
+	function _activate() {
+		$this->tw_install();
 	}
 	
-	echo "<aside id='twitter-wings' class='tw-widget'>$title";
-	
-	new TwitterWingsStart;
-	
-	if (follow_place() == 'below') {
-		echo "<footer>" . tw_follow() . "</footer>";
+	function _deactivate() {
+		include('uninstall.php');
 	}
 	
-	echo "</aside>";
-}
+	function init_admin() {}
 
-class TwitterWingsStart {
-			
-	private $users;
-	private $no_of_statuses;
-	private $hashes;
-	private $avatars;
-	private $cache_on;
-	
-	private $T_URL 	  = "http://api.twitter.com/1/statuses/user_timeline";
-	private $T_FORMAT = ".xml";
-	private $T_CACHE;
-	
-	function __construct(){
-		$sitename = strtolower(str_replace(" ","-",get_bloginfo('name')));
-		$force = $_GET['tw_force']; // force source from url
-				
-		$cache_on = get_option('tw_cache');
-		$this->cache_on = $cache_on;
-		
-		$users = get_option('tw_usernames');
-		$this->users = explode(",",$users);
-		
-		$this->no_of_statuses = is_numeric(get_option('tw_number')) ? get_option('tw_number') : 15;
-		
-		$hashes = get_option('tw_hashes');
-		$this->hashes = explode(",",$hashes);
-
-		$data = $this->tw_getData($force);
-									
-		$twitter_body = $this->tw_printData($data);
-		$twitter_wrap = $twitter_body;
-				
-		if ($twitter_body != "<div class='tw-body'></div>") {
-			echo $twitter_wrap;
+	function init() {
+		load_plugin_textdomain( 'twitter-wings', TWITTER_WINGS_DIR . '/languages', basename( dirname( __FILE__ ) ) . '/languages' );			
+		if (!defined('TW_VERSION') || TW_VERSION != '2.0.0') {
+			define('TW_VERSION', '2.0.0');
+			if (get_option('tw_active_version')) {
+				include('update.php');
+			}
 		}
 	}
-		
+	
 	/**
 	 * Return data to display
 	 * Calculate source, Api or Cache
@@ -97,224 +117,134 @@ class TwitterWingsStart {
 	 * it pulls from option cache.
 	 * 
 	 */
-	private function tw_getData($force){
-		if ($force == 'API'){
-			$data = $this->tw_getApiData();
-		}
-		elseif ($force == 'CACHE'){
-			if (false === ( $data = get_transient('tw_tweet_cache'))) {	
-				if (false === $data = get_option('tw_tweet_option_cache')) {
-					// no cache
-					return;
-				}
-			}	
-		}
-		else {
-			if (false === ($data = get_transient('tw_tweet_cache')) || $this->cache_on == false) {
-				$data = $this->tw_getApiData();
-				if (empty($data)) {
-					if (false === $data = get_option('tw_tweet_option_cache')) {
-						// no cache
-						return;
-					}
-				}
-			}
-			else {
-				return $data;
-			}
-		}
+	function tw_getData($options, $force) {	
 		
+		$data = ($options['tw_cache']) ? get_transient('tw_tweet_cache') : false;
+		
+		// if (get_transient('tw_tweet_cache')) { echo 'hello transient cache<br/>'; } else { echo 'transient cache expired<br/>'; }
+		
+		if ($data === false || $force == 'API') {
+			include('twitter-wings-class.php');
+			$tw_start = new TwitterWingsStart;
+			$data = $tw_start->tw_getApiData($options);
+		}
 		return $data;
 	}
 
+	function add_pages() {
 	
-	/**
-	 * 
-	 * Create array from Twitter API response
-	 * 
-	 */	
-	public function tw_getApiData(){
-		
-		$api_query = '&include_entities=1';
-		$api_query .= (get_option('tw_reply') == '') ? '&exclude_replies=1' : '';
-		$api_query .= (get_option('tw_retweet') == '') ? '&include_rts=1' : '';
-		$api_query .= ($this->no_of_statuses > 20) ? "&count={$this->no_of_statuses}" : '';
-		$sts = array();
-		foreach ($this->users as $key=>$name) {
-			
-			if (!$name) {
-				echo sprintf(__('Twitter Wings was not configured correctly. Add the username(s) you would like to display on the %soptions page%s.', 'twitter-wings'), "<a href='" . get_option('siteurl') . "/wp-admin/options-general.php?page=twitter-wings/options.php'>", "</a>");
-				break;
-			}
-												
-			$url = rawurlencode($this->T_URL . $this->T_FORMAT . '/?screen_name=' . $name . $api_query);
-						
-			$xml = @simplexml_load_file($url);
-			 							
-			/* if there is error in Twitter response force data from Cache */
-			if (!$xml) {
-				$data = $this->tw_getData('CACHE');
-				return $data;
-			}
-						
-			foreach ($xml as $x) {
-				
-				$retweet = ($x->retweeted_status) ? true : false;
-				
-				// CONTENT (IF IT'S A RETWEET GET THE ORIGINAL)
-				if ($retweet)
-					$tmp['text'] = 'RT @' . (string)$x->retweeted_status->user->screen_name . ': ' . (string)$x->retweeted_status->text;
-				else
-					$tmp['text'] = (string)$x->text;
-				
-				// MENTIONS (IF IT'S A RETWEET GET THE ORIGINAL)
-				$tmp['mentions'] = '';
-				if ($retweet && $x->retweeted_status->entities->user_mentions->user_mention) {
-					foreach ($x->retweeted_status->entities->user_mentions->user_mention as $mention) {
-						$m['screen_name'] = (string)$mention->screen_name;
-						$tmp['mentions'][] = $m;  // ah sss push it
-					}
-					// add the user you are retweeting to the array!
-					$m['screen_name'] = (string)$x->retweeted_status->user->screen_name;
-					$tmp['mentions'][] = $m;  // ah sss push it
-				
-				} elseif ($x->entities->user_mentions->user_mention) {
-					foreach ($x->entities->user_mentions->user_mention as $mention) {
-						$m['screen_name'] = (string)$mention->screen_name;
-						$tmp['mentions'][] = $m; // ah sss push it
-					}
-				}
-								
-				// URLS (IF IT'S A RETWEET GET THE ORIGINAL)
-				$tmp['urls'] = '';
-				if ($retweet && $x->retweeted_status->entities->urls->url) {
-					foreach ($x->retweeted_status->entities->urls->url as $url) { 
-						$l['url'] = (string)$url->url;
-						$l['display_url'] = (string)$url->display_url;
-						$tmp['urls'][] = $l; // push it real good
-					}
-				} elseif ($x->entities->urls->url) {
-					foreach ($x->entities->urls->url as $url) { 
-						$l['url'] = (string)$url->url;
-						$l['display_url'] = (string)$url->display_url;
-						$tmp['urls'][] = $l; // push it real good
-					}
-				}
-				
-				// HASHTAGS (IF IT'S A RETWEET GET THE ORIGINAL)
-				$tmp['hashtags'] = '';
-				if ($retweet && $x->retweeted_status->entities->hashtags->hashtag) {
-					foreach ($x->retweeted_status->entities->hashtags->hashtag as $hashtag) {
-						$h['hashtag'] = (string)$hashtag->text;
-						$tmp['hashtags'][] = $h; // ah sss push it
-					}
-				} elseif ($x->entities->hashtags->hashtag) {
-					foreach ($x->entities->hashtags->hashtag as $hashtag) {
-						$h['hashtag'] = (string)$hashtag->text;
-						$tmp['hashtags'][] = $h; // ah sss push it
-					}
-				}
-				
-				$tmp['time'] 		 = (string)$x->created_at;
-				$tmp['timestamp']	 = (string)strtotime($x->created_at);
-				$tmp['name'] 		 = (string)$x->user->name;
-				$tmp['username']	 = (string)$x->user->screen_name;
-				$tmp['avatar']		 = (string)$x->user->profile_image_url;
-				$tmp['permalink']	 = (string)'http://twitter.com/' . $x->user->screen_name . '/status/' . $x->id;
-				$sts[] = $tmp;
-
-			}
-		}
-		
-		/* sort statuses array by timestamp */
-		$tmp = $sts;
-		foreach ($tmp as $key=>$row) {
-			$text[$key] = $row['timestamp'];
-		}
-	
-		array_multisort($text,SORT_DESC,$tmp);
-	
-		$sts = $tmp;
-		/* end sorting */		
-			
-		/* put data in transient for latter use : cache */	
-		
-		$this->tw_save_to_cache($sts);		
-		
-		return $sts;	
-	}
-	
-	/**
-	 * Save to cache, both transient and option
-	 * 
-	 * 
-	 */
-	
-	public function tw_save_to_cache($statii) {
-		if (!empty($statii)) {
-			if (get_option('tw_cache_time') && is_numeric(get_option('tw_cache_time'))) {
-				$seconds = 60 * (int)get_option('tw_cache_time');
-			} else {
-				$seconds = 60 * 60;
-			}
-			set_transient('tw_tweet_cache', $statii, $seconds);
-			update_option('tw_tweet_option_cache',$statii);
-		}
+		// Add a new submenu
+		$this->addpage = add_options_page(__('Twitter Wings', 'twitter-wings'), __('Twitter Wings', 'twitter-wings'), 
+											'administrator', 'twitter-wings', 
+											array(&$this,'add_twitter_wings_page') );
+		add_action("admin_print_styles-$this->addpage", array(&$this,'add_twitter_wings_admin_styles'));
+		add_action("admin_print_scripts-$this->addpage", array(&$this,'add_twitter_wings_admin_scripts'));
 	}
 
-	/**
-	 * Print Twitter data
-	 * 
-	 * 
-	 */
-	private function tw_printData($sts) {
+	function add_twitter_wings_admin_styles() {
+		wp_enqueue_style('tw-admin-styles', plugins_url('/css/tw_admin_styles.css', __FILE__));
+	}
+	
+	function add_twitter_wings_admin_scripts() {
+		wp_enqueue_script('tw-admin-scripts', plugins_url('/js/tw_admin_scripts.js', __FILE__), array('jquery'));
+	}
+	
+	function add_twitter_wings_page() {
+		include('twitter-wings-options.php');
+	}
+			
+	// Default Settings
+	// When plugin is activated, update version, and set any new settings to default
+	function tw_install() {
+	
+		define('TW_VERSION', '2.0.0');
+		$options = array('tw_hashtag' => null,
+						 'tw_hashes' => null,
+						 'tw_reply' => null,
+						 'tw_removehashes' => null,
+						 'tw_styles' => null,
+						 'tw_follow' => null,
+						 'tw_follow_move' => null,
+						 'tw_follow_name' => null,
+						 'tw_follow_count' => null,
+						 'tw_follow_size' => null,
+						 'tw_follow_lang' => null
+						);
 		
+		$options['tw_follow_display_name'] = true;
+		$options['tw_usernames'] = 'joepahl,bsdeluxe';
+		$options['tw_title'] = 'Twitter';
+		$options['tw_number'] = 15;
+		$options['tw_photos'] = true;
+		$options['tw_user_titles'] = true;
+		$options['tw_time_below'] = true;
+		$options['tw_retweet'] = true;
+		$options['tw_https'] = true;
+		$options['tw_screennames'] = true;
+		$options['tw_chashes'] = true;
+		$options['tw_cache'] = true;
+		$options['tw_cache_time'] = 60;
+		$options['tw_time_form'] = 'M j, Y g:i a';
+				
+		add_option('tw_tweet_option_cache', '');
+		add_option('twitter_wings_options', $options);
+	}
+		
+	public function tw_printData($options) {
+		
+		$force = strtoupper($_GET['tw_force']);
+		$data = $this->tw_getData($options, $force);
 		$i = 0;
-		$twitter_body = "<div class='tw-body'>";
-		if (is_array($sts)) {
-				
-			foreach ($sts as $key=>$val) {
-								
-				if($this->tw_checkHashes($val['text'], $val['hashtags'])) continue;
-				
-				$img = (get_option('tw_photos') != '') ? "<div class='tw-avatar'><a href='http://www.twitter.com/{$val['username']}' title='@{$val['username']} on Twitter'><img src='{$val['avatar']}' alt='{$val['username']}' height=48 width=48 /></a></div>" : '';
-				
-				$hd_o = '';
-				$hd_c = '';
-				
-				if (get_option('tw_user_titles') == '') {
-					$screenname = '';
-				} else { 
-					$display_name = '';
-					if (get_option('tw_user_display') != '')
-						$display_name = "<span class='tw-display-name'> {$val['name']}</span>";
-					$screenname = "<p class='tw-name'><a href='http://www.twitter.com/{$val['username']}' title='@{$val['username']} on Twitter'>{$val['username']}</a>$display_name</p>";
-					$hd_o = "<header>";
-					$hd_c = "</header>";
-				}
-								
-				$text = $this->tw_parseStatus($val['text'], $val['urls'], $val['mentions'], $val['username'], $val['hashtags']);
-				
-				$username = strtolower($val['username']);
-																								
-				$timestamp = "<p class='tw-time'><time pubdate datetime='" . date('c', $val['timestamp']) . "'><a href='{$val['permalink']}' title='" . __('Permalink', 'twitter-wings') . "'>{$this->tw_showTime($val['timestamp'])}</a></time></p>";
-
-				if (get_option('tw_time_below') == '') {
-					$time_above = $timestamp;
-					$time_below = '';
-					$hd_o = "<header>";
-					$hd_c = "</header>";
-				} else { 
-					$time_above = '';
-					$time_below = '<footer>' . $timestamp . '</footer>';
-				}
-				
-				$twitter_body .= "\n\t\t<article class='tw-status tw-$username'>{$img}<div class='tw-content'>{$hd_o}{$screenname}{$time_above}{$hd_c}<p class='tw-text'>$text</p>$time_below</div></article>\n\t";
-				$i++;
-				if($i == $this->no_of_statuses) break;
-			}
+		
+		// Use Option Cache for fallback
+		if ((!$data || !is_array($data)) && $force != 'API') {
+			// echo 'hello option cache<br/>';
+			$data = get_option('tw_tweet_option_cache');
 		}
-		$twitter_body .= "</div>";
+			
+		foreach ($data as $val) {
+							
+			// Filter by hashtag 			
+			if (($options['tw_hashtag'] && $options['tw_hashes']) && $this->tw_checkHashes($options['tw_hashes'], $val['hashtags'][0])) {
+				continue;
+			}
+						
+			// "_reasonably_small" image
+			$val['avatar'] = $this->str_lreplace('_normal', '_reasonably_small', $val['avatar']);
+							
+			$img = ($options['tw_photos']) ? "<div class=\"tw-avatar\"><a href=\"http://www.twitter.com/{$val['username']}\" title=\"@{$val['username']} on Twitter\" target=\"twitter\"><img src=\"{$val['avatar']}\" alt=\"{$val['username']}\" height=48 width=48 /></a></div>" : '';
+			
+			$hd_o = '';
+			$hd_c = '';
+			
+			if (!$options['tw_user_titles']) {
+				$screenname = '';
+			} else { 
+				$screenname = "<p class=\"tw-name byline author vcard\"><a href=\"http://www.twitter.com/{$val['username']}\" class=\"url\" title=\"@{$val['username']} on Twitter\" target=\"twitter\"><span class=\"tw-display-name fn\">{$val['name']}</span> <span class=\"nickname\">@{$val['username']}</span></a></p>";
+				$hd_o = "<header>";
+				$hd_c = "</header>";
+			}
+							
+			$text = $this->tw_parseStatus($options, $val['text'], $val['urls'], $val['mentions'], $val['username'], $val['hashtags']);
+			
+			$username = strtolower($val['username']);
+			
+			$timestamp = "<p class=\"tw-time\"><a href=\"{$val['permalink']}\" rel=\"bookmark\" target=\"twitter\"><time pubdate class=\"updated\" datetime=\"" . date('c', $val['timestamp']) . "\">{$this->tw_showTime($options, $val['timestamp'])}</time></a></p>";
+
+			if (!$options['tw_time_below']) {
+				$time_above = $timestamp;
+				$time_below = '';
+				$hd_o = "<header>";
+				$hd_c = "</header>";
+			} else { 
+				$time_above = '';
+				$time_below = '<footer>' . $timestamp . '</footer>';
+			}
+			
+			$twitter_body .= "\t\t\t<article class=\"tw-status tw-$username hentry\">{$img}<div class=\"tw-content\">{$hd_o}{$screenname}{$time_above}{$hd_c}<p class=\"tw-text entry-content\">$text</p>$time_below</div></article>\n";
+			$i++;
+			if ($i == $options['tw_number']) { break; }
+		}		
 		return $twitter_body;
 	}
 	
@@ -323,7 +253,8 @@ class TwitterWingsStart {
 	 * 
 	 * 
 	 */
-	private function tw_showTime($ts){
+	private function tw_showTime($options, $ts){
+		
 		$c = time() - $ts;
 		
 		if ($c < 60) {
@@ -334,53 +265,53 @@ class TwitterWingsStart {
 			return (int)($c/3600) . ' hours ago'; 
 		} else {
 			$tz = get_option('gmt_offset') * 3600;
-			$time_form = (get_option('tw_time_form') != '') ? get_option('tw_time_form') : 'g:i A M d\, Y';
+			$time_form = ($options['tw_time_form']);
 			$nd = date($time_form, $ts+$tz);
-			if (!strtotime($nd))
-				$nd = date('g:i A M d\, Y', $ts+$tz);
-			
+			if (!strtotime($nd)) {
+				$nd = date('M j\, Y g:i a', $ts+$tz);
+			}
 			return $nd;
 		}
 	}
 	
 	/**
-	 * 
 	 * Adding links, screen names, keywords 
 	 * Remove unwanted hashes
 	 * 
 	 */	
-	private function tw_parseStatus($text, $urls, $mentions, $username, $hashtags) {
+	private function tw_parseStatus($options, $text, $urls, $mentions, $username, $hashtags) {
 
 		// add url links
-		if(get_option('tw_https') != '' && $urls) {
+		if ($options['tw_https'] && $urls) {
 			
 			// loop through URLS (add the pretty links)
 			foreach($urls as $url_array) {			
 				extract($url_array);
 				// fallback for links sans-display_url
-				if (!$display_url)							
+				if (!$display_url) {				
 					$display_url = $url;
-				$text = preg_replace("@{$url}([^A-Za-z0-9\"'<]|\s|$)@iu", "<a href='{$url}' class='tw-url'><span>{$display_url}</span></a>$1", $text); // using @ to delimit, as / shows up in $url
+				}
+				$text = preg_replace("@{$url}([^A-Za-z0-9\"'<]|\s|$)@iu", "<a href=\"{$url}\" class=\"tw-url\" target=\"_blank\"><span>{$display_url}</span></a>$1", $text); // using @ to delimit, as / shows up in $url
 			}
 		}	
 			
 		// add mention links
-		if(get_option('tw_screennames') != '' && $mentions) {
+		if ($options['tw_screennames'] && $mentions) {
 			
 			// loop through MENTIONS
 			foreach($mentions as $mention_array) {
 				extract($mention_array);
-				$text =  preg_replace("/@{$screen_name}\b/iuU", "<a href='http://twitter.com/{$screen_name}' class='tw-mention'>@<span>{$screen_name}</span></a>", $text);
+				$text =  preg_replace("/@{$screen_name}\b/iuU", "<a href=\"http://twitter.com/{$screen_name}\" class=\"tw-mention\" target=\"twitter\">@<span>{$screen_name}</span></a>", $text);
 			}
 			
 			// mentioning yourself is lame, but here ya go (case-insensitive b/c we are dealing with primates)
 			if (stripos($text, "@{$username}")) {
-				$text = preg_replace("/@{$username}\b/iuU", "<a href='http://twitter.com/{$username}' class='tw-mention'>@<span>{$username}</span></a>", $text);
+				$text = preg_replace("/@{$username}\b/iuU", "<a href=\"http://twitter.com/{$username}\" class=\"tw-mention\" target=\"twitter\">@<span>{$username}</span></a>", $text);
 			}
 		}
 		
 		// remove hashes
-		if(get_option('tw_removehashes') != '' && $hashtags) {
+		if ($options['tw_removehashes'] && $hashtags) {
 			foreach($hashtags as $hash_array) {
 				extract($hash_array);
 				$text = preg_replace("/#{$hashtag}\b/iU", "", $text);
@@ -388,169 +319,146 @@ class TwitterWingsStart {
 		}
 	
 		// hashtag links
-		if(get_option('tw_chashes') != '' && $hashtags) {
+		if ($options['tw_chashes'] && $hashtags) {
 			// loop through HASHTAGS
 			foreach($hashtags as $hash_array) {
 				extract($hash_array);
-				$text =  preg_replace("/#{$hashtag}\b/iU", "<a href='http://twitter.com/search?q=%23{$hashtag}' class='tw-hashtag'>#<span>{$hashtag}</span></a>", $text);
+				$text =  preg_replace("/#{$hashtag}\b/iU", "<a href=\"http://twitter.com/search?q=%23{$hashtag}\" class=\"tw-hashtag\" target=\"twitter\">#<span>{$hashtag}</span></a>", $text);
 			}
 		}
 		return $text;
 	}
-
+	
 	/**
-	 * 
 	 * Does status have the hashes that we want to display?
-	 * "No" means "Yes" and "Yes" means "No" (don't let the TRUE/FALSE confuse you)
+	 * "No" means "Yes" and "Yes" means "No"
 	 * 
 	 */
-	private function tw_checkHashes($text, $hashtags){
-
-		if(get_option('tw_hashes') != '') {
-			if ($hashtags) {
-				foreach($this->hashes as $val) {
-					$strip = array(' ', '#');
-					$val = str_replace($strip, '', $val);
-										
-					foreach ($hashtags as $hash_array) {
-						extract($hash_array);
-						if (strtolower($hashtag) == strtolower($val)) return false;
-					}
-					return true;
-				}
-				return true;
-			}
-			return true;
-		} else {
-			return false;
-		}
-	}
-}
-
-class TwitterWings {
-	function control(){
-		echo sprintf(__('Configure this widget on %soptions page%s.', 'twitter-wings'), "<a href='" . get_option('siteurl') . "/wp-admin/options-general.php?page=twitter-wings/options.php'>", "</a>");
-	}
-	function widget($args){
-		
-		$title = apply_filters('widget_title', get_option('tw_title'));
-		
-		$title = ($title) ? $args['before_title'] . $title . $args['after_title'] : '';
-		
-		if (follow_place() == 'above') {
-			$title = "<header class='tw-header'>$title" . tw_follow() . "</header>";
-		}
+	private function tw_checkHashes($options_hash, $hashtags) {
+				
+		if ($options_hash && is_array($hashtags)) {
+			
+			$options_hash = explode(',',$options_hash);
+			
+			foreach($options_hash as $hash) {
+				
+				$hash = trim($hash);
+				$hash = str_replace('#', '', $hash);
 									
-		echo $args['before_widget'] . $title;
-		
-		new TwitterWingsStart();
-		
-		if (follow_place() == 'below') {
-			echo "<footer>" . tw_follow() . "</footer>";
+				foreach ($hashtags as $hashtag) {
+										
+					if (strtolower($hashtag) == strtolower($hash)) { 
+						return false;
+					} else {
+						return true;
+					}
+				}
+			}			
+		} else {
+			return true;
 		}
+	}
+	
+	public function tw_follow($options) {
+		$display_username = ($options['tw_follow_display_name']) ? '' : ' data-show-screen-name="false"';
+		$count = ($options['tw_follow_count']) ? '' : ' data-show-count="false"';
+		$big = (!$options['tw_follow_size']) ? '' : ' data-size="large"';
 		
-		echo $args['after_widget'];
+		$lang = ($options['tw_follow_lang'] && $options['tw_follow_lang'] != 'en') ? " data-lang=\"$lang\"" : '';
+		
+		$follow = "<p class=\"tw-follow\"><a href=\"https://twitter.com/{$options['tw_follow_name']}\" class=\"twitter-follow-button\" data-dnt=\"true\"{$count}{$lang}{$big}{$display_username}>";
+		$follow .= sprintf(__('Follow @%s', 'twitter-wings'), $options['tw_follow_name']) . "</a></p>\n\t\t\t";
+		$follow .= '<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>';
+		
+		return $follow;
 	}
-	function register(){
-		wp_register_sidebar_widget('twitter-wings', 'Twitter Wings', array('TwitterWings', 'widget'), array('classname' => 'tw-widget'));
-		wp_register_widget_control('twitter-wings', 'Twitter Wings', array('TwitterWings', 'control'));
-	}	
-}
+	
+	// replace last occurence of string in string
+	function str_lreplace($search, $replace, $subject) {
+	    $pos = strrpos($subject, $search);
+	    if ($pos !== false) {
+	        $subject = substr_replace($subject, $replace, $pos, strlen($search));
+	    }
+	    return $subject;
+	}
+	
+	function javascript_redirect($location) {
+		// redirect after header here can't use wp_redirect($location);
+		?>
+		  <script type="text/javascript">
+		  <!--
+		  window.location= <?php echo "'" . $location . "'"; ?>;
+		  //-->
+		  </script>
+		<?php
+		exit;
+	}
 
-function valid_color($color, $text='link') {
-	if ($color != '') {
-		$color = ($color[0] == '#') ? $color : '#' . $color;
-		$color = (preg_match('/^#[a-f0-9]{6}$/i', $color)) ? " data-$text-color='$color'" : '';
-		return $color;
-	}	
-	return '';
-}
+} // end class
+endif;
 
-function tw_follow() {
-	$username = get_option('tw_follow_name');		
-	$button = (get_option('tw_follow_button') != '') ? " data-button='grey'" : '';
-	$count = (get_option('tw_follow_count') != '') ? '' : " data-show-count='false'";
+if (!class_exists('Twitter_Wings_Widget')) :
+class Twitter_Wings_Widget {
 	
-	$txt_color = valid_color(get_option('tw_text_color'), 'text');
-	$lnk_color = valid_color(get_option('tw_link_color'));
-	
-	$lang = get_option('tw_follow_lang');
-	$lang = ($lang != '' && $lang != 'en') ? " data-lang='$lang'" : '';
-	
-	$follow = "<p class='tw-follow'><a href='https://twitter.com/{$username}' class='twitter-follow-button'{$button}{$count}{$txt_color}{$lnk_color}{$lang}>";
-	$follow .= sprintf(__('Follow @%s', 'twitter-wings'), $username) . "</a></p>";
-	$follow .= "<script src='//platform.twitter.com/widgets.js' type='text/javascript'></script>";
-	return $follow;
+	function control() {
+		echo sprintf(__('%sTwitter Wings Options%s', 'twitter-wings'), '<a href="' . get_bloginfo('siteurl') . '/wp-admin/options-general.php?page=twitter-wings">', '</a>');
+  	}
+  	
+  	function widget($args) {
+  		global $twitter_wings;
+  		$options = get_option('twitter_wings_options');
+  		
+  		// load stylesheet
+  		if (!$options['tw_styles']) {
+			wp_enqueue_style('tw-stylesheet', TWITTER_WINGS_URL . '/css/tw_styles.css');
+  		}
+		
+		// defaults for header and footer elements  		
+  		$header_o = ''; $header_b = ''; $footer = '';
+		
+		$tw_args = array('before' => null, 'body' => null, 'after' => null);
+  		// Add Follow Button! (option must be checked and username must be added)
+  		if ($options['tw_follow'] && $options['tw_follow_name'] && $options['tw_follow_move']) {
+  			$tw_args['before'] = "<header class=\"tw-header\">\n\t\t\t";
+  			$tw_args['body'] = "\n\t\t\t" . $twitter_wings->tw_follow($options) . "\n\t\t</header>";
+  		} elseif ($options['tw_follow'] && $options['tw_follow_name']) {
+  			$tw_args['after'] = "\t<footer class=\"tw-footer\">\n\t\t\t" . $twitter_wings->tw_follow($options) . "\n\t\t</footer>\n\t";
+  		}
+  		
+  		// Get formated Twitter data
+  		$content = $twitter_wings->tw_printData($options);
+  		
+  		// Put everything together and echo results
+  		if ($content) {
+  			$out = "\n\t" . $args['before_widget'];
+	   		$out .= "\n\t\t" . $tw_args['before'] . $args['before_title'] . $options['tw_title'] . $args['after_title'] . $tw_args['body'];
+	    	$out .= "\n\t\t<div class=\"tw-body\">\n" . $content . "\t\t</div>";    	
+	    	$out .= "\n\t" . $tw_args['after'] . $args['after_widget'] . "\n";
+  		} else {
+  			$out = "\n\t" . $args['before_widget'] . 'Whoops! Looks like something went wrong. Twitter will be back shortly.' . "\n\t" . $args['after_widget'] . "\n";
+  		}
+  		echo $out;
+	}
+  	
+  	function register() {
+    	register_sidebar_widget('Twitter Wings', array('Twitter_Wings_Widget', 'widget'));
+    	register_widget_control('Twitter Wings', array('Twitter_Wings_Widget', 'control'));
+	}
 }
-	
-function follow_place() {
-	if (get_option('tw_follow') != '' && get_option('tw_follow_move') != '') {
-		return 'above';
-	} elseif (get_option('tw_follow') != '' && get_option('tw_follow_move') == '') {
-		return 'below';
-	} else {
-		return false;
+endif;
+
+if (!function_exists('TwitterWings')) {
+	function TwitterWings($args = array('before_widget' => '<div id="twitter-wings" class="tw-wrapper">',
+										'after_widget' => '</div>',
+										'before_title' => '<h2 class="tw-title">',
+										'after_title' => '</h2>' 
+										)){
+		$twitterwings = new Twitter_Wings_Widget();
+		$twitterwings->widget($args);
 	}
 }
 
-// ENQUEUE STYLES
-function tw_styles() {
-	$css_path = plugins_url('css/tw_styles.css', __FILE__);
-	wp_enqueue_style('tw-stylesheet', $css_path);
+global $twitter_wings;
+if (class_exists('Twitter_Wings') && !$twitter_wings) {
+    $twitter_wings = new Twitter_Wings();	
 }
-
-// Install and Uninstall
-register_activation_hook(__FILE__, 'tw_install');
-register_deactivation_hook(__FILE__, 'tw_uninstall');
-
-// Default Settings
-// When plugin is activated, update version, and set any new settings to default
-function tw_install() {
-	add_option('tw_active_version', '1.2.1');
-	add_option('tw_usernames', 'joepahl,bsdeluxe,dylanized');
-	add_option('tw_hashes', '');
-	add_option('tw_title', 'Twitter');
-	add_option('tw_number',	'15');
-	add_option('tw_photos', '');
-	add_option('tw_user_titles', '1');
-	add_option('tw_user_display', '');
-	add_option('tw_time_below', '');
-	add_option('tw_reply', '');
-	add_option('tw_retweet', '');
-	add_option('tw_https', '1');
-	add_option('tw_screennames', '1');
-	add_option('tw_chashes', '1');
-	add_option('tw_removehashes', '');
-	add_option('tw_cache', '1');
-	add_option('tw_cache_time', '60');
-	add_option('tw_styles', '');
-	add_option('tw_time_form', 'g:i A M d, Y');
-	
-	add_option('tw_follow', '');
-	add_option('tw_follow_move', '');
-	add_option('tw_follow_name', '');
-	add_option('tw_follow_count', '');
-	add_option('tw_follow_button', '');
-	add_option('tw_text_color', '');
-	add_option('tw_link_color', '');
-	add_option('tw_follow_lang', '');	
-}
-
-// Delete settings on when uninstalled
-function tw_uninstall() {
-	delete_option('tw_active_version');
-	delete_option('tw_cache');
-	tw_delete_cache();
-}
-
-function tw_delete_cache() {
-	delete_transient('tw_tweet_cache');
-	delete_option('tw_tweet_option_cache');
-}
-
-if (get_option('tw_styles') == '')
-	add_action('wp_print_styles', 'tw_styles');
-
-add_action('update_option_tw_usernames', 'tw_delete_cache');	
-add_action('admin_menu','tw_options_page');
-add_action('widgets_init', array('TwitterWings', 'register'));
