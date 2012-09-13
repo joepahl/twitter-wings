@@ -5,9 +5,6 @@ if (!function_exists('is_admin')) {
     exit();
 }
 
-if ( ! current_user_can('update_plugins') )
-	wp_die(__('You are not allowed to update plugins on this blog.'));
-
 if (!class_exists('TwitterWingsStart')) :
 
 class TwitterWingsStart {
